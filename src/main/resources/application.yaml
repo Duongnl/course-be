@@ -1,0 +1,20 @@
+server:
+  servlet:
+    context-path: /api
+
+spring:
+  datasource:
+    url: "jdbc:${DATABASE_HOST}"
+    username: "${DATABASE_USER}"
+    password: "${DATABASE_PASSWORD}"
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+
+jwt:
+  accessTokenSecret: "${ACCESS_TOKEN_SECRET}"
+  refreshTokenSecret: "${REFRESH_TOKEN_SECRET}"
+
+allowed: "${ALLOWED_ORIGIN}"
