@@ -34,12 +34,16 @@ public class AuthenticationController {
                 .result("Hello")
                 .build();
     }
+    
 
-//  Dang nhap fb
-    @PostMapping("/facebook")
-    public ApiResponse<AuthenticationResponse> loginWithFacebook(@RequestBody AuthenticationRequest authenticationRequest) {
-       return ApiResponse.<AuthenticationResponse>builder()
-               .result(authenticationService.loginWithFacebook(authenticationRequest))
-               .build();
+//  Dang nhap bang google
+    @PostMapping("/google")
+    public ApiResponse<AuthenticationResponse> loginWithGoogle(@RequestBody AuthenticationRequest authenticationRequest) {
+        System.out.println("authenticationRequest >>> " + authenticationRequest);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(authenticationService.loginWithGoogle(authenticationRequest))
+                .build();
     }
+
+
 }

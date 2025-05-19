@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum AuthErrorCode implements ErrorCode {
     UNAUTHENTICATED("AUTH_1","Unauthenticated", HttpStatus.UNAUTHORIZED),
-
+    ACCOUNT_LOCKED("AUTH_2","Account locked", HttpStatus.UNAUTHORIZED),
     ;
 
     AuthErrorCode(String code, String message, HttpStatus httpStatus) {

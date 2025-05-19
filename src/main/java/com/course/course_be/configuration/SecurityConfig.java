@@ -11,6 +11,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -24,7 +26,7 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableMethodSecurity // phan quyen theo method
 public class SecurityConfig {
 
-    private final String[] PUBLIC_ENDPOINTS = {"/auth/token", "/auth/refresh-token", "/auth/facebook"};
+    private final String[] PUBLIC_ENDPOINTS = {"/auth/token", "/auth/refresh-token", "/auth/google"};
 
     @Value("${jwt.accessTokenSecret}")
     private String ACCESS_TOKEN_SECRET;
@@ -63,6 +65,18 @@ public class SecurityConfig {
         return NimbusJwtDecoder.withSecretKey(secretKeySpec)
                 .macAlgorithm(MacAlgorithm.HS512)
                 .build();
+    }
+
+
+    //    convert SCOPE thanh ROLE
+    @Bean
+    JwtAuthenticationConverter jwtAuthenticationConverter(){
+        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+        return  jwtAuthenticationConverter;
     }
 
 
