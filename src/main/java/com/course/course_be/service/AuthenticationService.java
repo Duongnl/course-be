@@ -4,9 +4,12 @@ import com.course.course_be.dto.request.auth.AuthenticationRequest;
 import com.course.course_be.dto.request.auth.RefreshTokenRequest;
 import com.course.course_be.dto.response.auth.AuthenticationResponse;
 import com.course.course_be.entity.Account;
+import com.course.course_be.entity.Profile;
+import com.course.course_be.exception.AccountErrorCode;
 import com.course.course_be.exception.AppException;
 import com.course.course_be.exception.AuthErrorCode;
 import com.course.course_be.repository.AccountRepository;
+import com.course.course_be.repository.ProfileRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -29,6 +32,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
@@ -39,6 +44,7 @@ import java.util.Optional;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationService {
 
+     ProfileRepository profileRepository;
     // de no kh inject vao contructe cua lombok
     //    key refresh token
     @NonFinal
@@ -87,11 +93,11 @@ public class AuthenticationService {
             ResponseEntity<Map> response = restTemplate.postForEntity(tokenUrl, request, Map.class);
             Map<String, Object> tokenData = response.getBody();
 
-            String accessToken = (String) tokenData.get("access_token");
+            String accessTokenGG = (String) tokenData.get("access_token");
             String idToken = (String) tokenData.get("id_token");
 
             // Option 1: Lấy user info bằng access token (như bạn làm)
-            String userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + accessToken;
+            String userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + accessTokenGG;
             ResponseEntity<Map> userResponse = restTemplate.getForEntity(userInfoUrl, Map.class);
             Map<String, Object> userInfo = userResponse.getBody();
 
@@ -106,33 +112,27 @@ public class AuthenticationService {
             System.out.println("pictureUrl >>> " + pictureUrl);
 
 
-            // Ảnh đại diện
-//            Optional<Account> account = accountRepository.findByFacebookId(id);
-//
-////            tk moi
-//            if (account.isEmpty()) {
-//
-//            }
-////            tk cu
-//            else {
-////                tk dang hoat dong
-//                if (account.get().getStatus().equals("active")) {
-//
-//                }
-////                tk bị khóa
-//                else {
-//                    throw new AppException(AuthErrorCode.ACCOUNT_LOCKED);
-//                }
-//            }
+            Account account = accountRepository.findByGoogleId(googleId);
+            System.out.println("account >>> " + account);
+//            tk moi
+            if (account == null) {
+                account   =   handleSaveNewAccount(userInfo);
+                System.out.println("account >>> " + account);
+            }
+//            tk cu bi khoa
+            else if (account.equals("inactive")) {
+                    throw new AppException(AuthErrorCode.ACCOUNT_LOCKED);
+            }
 
 
             // Tạo token của hệ thống bạn
-//            var refreshToken = generateRefreshToken(id);
-//            var accessToken = generateAccessToken(id);
+            var refreshToken = generateRefreshToken(account);
+
+            var accessToken = generateAccessToken(account);
 
             return AuthenticationResponse.builder()
-//                    .refreshToken(refreshToken)
-//                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .accessToken(accessToken)
                     .authenticated(true)
                     .build();
         } catch (Exception e) {
@@ -143,16 +143,48 @@ public class AuthenticationService {
 
     }
 
+    public Account handleSaveNewAccount (Map<String, Object> userInfo ) {
+        String email = (String) userInfo.get("email");
+        String googleId = (String) userInfo.get("sub");
+        String fullName = (String) userInfo.get("name");            // Tên đầy đủ
+        String pictureUrl = (String) userInfo.get("picture");
 
-    public void handleSaveNewAccount (String idFb) {
+        Account account = new Account();
+        account.setGoogleId(googleId);
+        account.setEmail(email);
+        account.setRole("CLIENT");
+        account.setStatus("active");
+        account.setCreatedAt(LocalDateTime.now());
 
+        Profile profile = new Profile();
+        profile.setName(fullName);
+        profile.setAvatarUrl(pictureUrl);
+        account.setProfile(profile);
+        profile.setAccount(account);
+
+        try {
+
+            profileRepository.save(profile);
+        } catch (Exception e) {
+            throw new AppException(AccountErrorCode.SAVE_USER_FAIL);
+        }
+
+        return account;
     }
 
     public AuthenticationResponse refreshToken (RefreshTokenRequest refreshTokenRequest)  {
         try {
             if (introspectRefreshToken(refreshTokenRequest)){
-                String username = getUsernameFromToken(refreshTokenRequest.getRefreshToken());
-                String accessToken = generateAccessToken(username);
+                String googleId = getUsernameFromToken(refreshTokenRequest.getRefreshToken());
+
+                Account account = accountRepository.findByGoogleId(googleId);
+                if (account == null) {
+                    throw new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND);
+                } else if (account.getStatus().equals("inactive")) {
+                    throw new AppException(AuthErrorCode.ACCOUNT_LOCKED);
+                }
+
+                String accessToken = generateAccessToken(account);
                 return  AuthenticationResponse.builder()
                         .accessToken(accessToken)
                         .authenticated(true)
@@ -176,7 +208,7 @@ public class AuthenticationService {
 
     // kiem tra xem refresh token co hop le khong
     public boolean introspectRefreshToken(RefreshTokenRequest refreshTokenRequest)
-            throws JOSEException, ParseException {
+          {
         var token = refreshTokenRequest.getRefreshToken();
 
         try {
@@ -204,15 +236,16 @@ public class AuthenticationService {
 
 
     //    tao refresh token
-    public String generateRefreshToken(String username) {
+    public String generateRefreshToken(Account account) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);// tao header
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder() // tao body
-                .subject(username)
+                .subject(account.getGoogleId())
                 .issuer("course.com") // token nay dc issuer tu ai
                 .issueTime(new Date()) // thoi diem hien tai
                 .expirationTime(new Date(
                         Instant.now().plus(30, ChronoUnit.DAYS)  // 30 ngày
                                 .toEpochMilli()))
+
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject()); // tao pay load
         JWSObject jwsObject = new JWSObject(header, payload);// built thong tin token
@@ -225,15 +258,16 @@ public class AuthenticationService {
     }
 
     //    tao access token
-    public String generateAccessToken(String username) {
+    public String generateAccessToken(Account account) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);// tao header
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder() // tao body
-                .subject(username)
+                .subject(account.getGoogleId())
                 .issuer("course.com") // token nay dc issuer tu ai
                 .issueTime(new Date()) // thoi diem hien tai
                 .expirationTime(new Date(
                         Instant.now().plus(15, ChronoUnit.MINUTES) // 15 phút là chuẩn an toàn
                                 .toEpochMilli()))
+                .claim("scope",account.getRole() )
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject()); // tao pay load
         JWSObject jwsObject = new JWSObject(header, payload);// built thong tin token

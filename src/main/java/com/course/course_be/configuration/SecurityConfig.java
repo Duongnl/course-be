@@ -26,7 +26,7 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableMethodSecurity // phan quyen theo method
 public class SecurityConfig {
 
-    private final String[] PUBLIC_ENDPOINTS = {"/auth/token", "/auth/refresh-token", "/auth/google"};
+    private final String[] PUBLIC_ENDPOINTS = {"/auth/refresh-token", "/auth/google",  "/auth/introspect-refresh-token"};
 
     @Value("${jwt.accessTokenSecret}")
     private String ACCESS_TOKEN_SECRET;
@@ -47,10 +47,13 @@ public class SecurityConfig {
 //        ham nay nhan token va xac thuc, nay cau hinh cho headerauthentication
 //        ham nay de cho phep nhan token, khi o front end gui token qua header Authorization thi ham cai nay se nhan duoc
         httpSecurity.oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder()))
+                oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
 //                        neu token khong hop le thi vao day
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
+
         );
+
 //
 //      mac dinh  tat cau hinh nay di
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
