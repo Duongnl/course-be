@@ -45,5 +45,17 @@ public class AuthenticationController {
                 .build();
     }
 
+    @PostMapping("/introspect-refresh-token")
+    public ApiResponse<AuthenticationResponse> introspectRefreshToken(@RequestBody RefreshTokenRequest request) {
+        boolean bool = authenticationService.introspectRefreshToken(request);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(
+                        AuthenticationResponse.builder()
+                                .authenticated(bool)
+                                .build()
+                )
+                .build();
+    }
+
 
 }
