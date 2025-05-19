@@ -17,7 +17,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
@@ -25,6 +32,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -42,54 +50,102 @@ public class AuthenticationService {
     @Value("${jwt.accessTokenSecret}")
     private String ACCESS_TOKEN_SECRET;
 
+    @NonFinal
+    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    private String GOOGLE_CLIENT_ID;
+
+    @NonFinal
+    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
+    private String GOOGLE_CLIENT_SECRET;
+
+    @NonFinal
+    @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
+    private String GOOGLE_REDIRECT_URI;
+
+
+
     AccountRepository accountRepository;
 
 
-    //    login
-    public AuthenticationResponse loginWithFacebook(AuthenticationRequest request) {
-        String accessFBToken = request.getAccessToken();
-
-        // Gọi Facebook Graph API để lấy thông tin người dùng
-        String url = "https://graph.facebook.com/me?fields=id,name,picture,email&access_token=" + accessFBToken;
-        System.out.println("url >>> " +url);
-        RestTemplate restTemplate = new RestTemplate();
+    public AuthenticationResponse loginWithGoogle(AuthenticationRequest authenticationRequest) {
         try {
-            Map<String, Object> fbUser = restTemplate.getForObject(url, Map.class);
+            String tokenUrl = "https://oauth2.googleapis.com/token";
 
-            // Du lieu nguoi dung
-            String id = (String) fbUser.get("id");
-            String email = (String) fbUser.get("email");
-            String name = (String) fbUser.get("name");
-            Map<String, Object> picture = (Map<String, Object>) fbUser.get("picture");
-            String pictureUrl = (String) ((Map<String, Object>) picture.get("data")).get("url");
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-            System.out.println("id >>> "+ id);
-            System.out.println("email >>> "+ email);
-            System.out.println("name >>> "+ name);
-            System.out.println("pictureUrl >>> "+ pictureUrl);
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("code", authenticationRequest.getAccessToken());
+            params.add("client_id", GOOGLE_CLIENT_ID);
+            params.add("client_secret", GOOGLE_CLIENT_SECRET);
+            params.add("redirect_uri", GOOGLE_REDIRECT_URI);
+            params.add("grant_type", "authorization_code");
+
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Map> response = restTemplate.postForEntity(tokenUrl, request, Map.class);
+            Map<String, Object> tokenData = response.getBody();
+
+            String accessToken = (String) tokenData.get("access_token");
+            String idToken = (String) tokenData.get("id_token");
+
+            // Option 1: Lấy user info bằng access token (như bạn làm)
+            String userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + accessToken;
+            ResponseEntity<Map> userResponse = restTemplate.getForEntity(userInfoUrl, Map.class);
+            Map<String, Object> userInfo = userResponse.getBody();
+
+            String email = (String) userInfo.get("email");
+            String googleId = (String) userInfo.get("sub");
+            String fullName = (String) userInfo.get("name");            // Tên đầy đủ
+            String pictureUrl = (String) userInfo.get("picture");
+
+            System.out.println("email >>> " + email);
+            System.out.println("googleId >>> " + googleId);
+            System.out.println("fullName >>> " + fullName);
+            System.out.println("pictureUrl >>> " + pictureUrl);
 
 
-//            Tao ra token
-            var refreshToken = generateRefreshToken(id);
-            var accessToken = generateAccessToken(id);
+            // Ảnh đại diện
+//            Optional<Account> account = accountRepository.findByFacebookId(id);
+//
+////            tk moi
+//            if (account.isEmpty()) {
+//
+//            }
+////            tk cu
+//            else {
+////                tk dang hoat dong
+//                if (account.get().getStatus().equals("active")) {
+//
+//                }
+////                tk bị khóa
+//                else {
+//                    throw new AppException(AuthErrorCode.ACCOUNT_LOCKED);
+//                }
+//            }
 
-          return  AuthenticationResponse.builder()
-                            .refreshToken(refreshToken)
-                            .accessToken(accessToken)
-                            .authenticated(true)
-                            .build();
+
+            // Tạo token của hệ thống bạn
+//            var refreshToken = generateRefreshToken(id);
+//            var accessToken = generateAccessToken(id);
+
+            return AuthenticationResponse.builder()
+//                    .refreshToken(refreshToken)
+//                    .accessToken(accessToken)
+                    .authenticated(true)
+                    .build();
         } catch (Exception e) {
-            System.out.println("loi khi tao token");
+            // Các lỗi khác
+            System.err.println("Lỗi không xác định: " + e.getMessage());
             throw new AppException(AuthErrorCode.UNAUTHENTICATED);
         }
+
     }
 
-    public void handleSaveAccount (String idFb) {
-        if (!accountRepository.existsByFacebookId(idFb)) {
-            Account account = new Account();
-            account.setFacebookId(idFb);
 
-        }
+    public void handleSaveNewAccount (String idFb) {
+
     }
 
     public AuthenticationResponse refreshToken (RefreshTokenRequest refreshTokenRequest)  {

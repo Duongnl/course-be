@@ -27,8 +27,8 @@ public class Account {
     String id;
 
 //    Id cua fb khi dang nhap
-    @Column(name = "facebook_id", nullable = false)
-    String facebookId;
+    @Column(name = "google_id", nullable = false)
+    String googleId;
 
 //    Email cua tai khoan
     @Column(name = "email", nullable = true)
