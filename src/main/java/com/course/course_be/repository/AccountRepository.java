@@ -8,6 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, String> {
-    boolean existsByFacebookId(String facebookId);
-    Optional<Account> findByFacebookId(String userName);
+    boolean existsByGoogleId(String facebookId);
+    Optional<Account> findByGoogleId(String userName);
 }
