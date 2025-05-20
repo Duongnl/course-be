@@ -26,7 +26,7 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableMethodSecurity // phan quyen theo method
 public class SecurityConfig {
 
-    private final String[] PUBLIC_ENDPOINTS = {"/auth/refresh", "/auth/google",  "/auth/introspect-refresh-token"};
+    private final String[] PUBLIC_ENDPOINTS = {"/auth/refresh", "/auth/google",  "/auth/introspect-refresh-token", "/auth/introspect-access-token"};
 
     @Value("${jwt.accessTokenSecret}")
     private String ACCESS_TOKEN_SECRET;
