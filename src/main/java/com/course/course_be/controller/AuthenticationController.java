@@ -21,7 +21,7 @@ public class AuthenticationController {
 
 
 //    Xin access token moi tu refresh token
-    @PostMapping("refresh-token")
+    @PostMapping("refresh")
     public ApiResponse<AuthenticationResponse> refreshToken (@RequestBody @Valid RefreshTokenRequest authenticationRequest) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.refreshToken(authenticationRequest))
