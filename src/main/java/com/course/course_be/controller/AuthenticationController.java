@@ -1,5 +1,6 @@
 package com.course.course_be.controller;
 
+import com.course.course_be.dto.request.auth.AccessTokenRequest;
 import com.course.course_be.dto.request.auth.AuthenticationRequest;
 import com.course.course_be.dto.request.auth.RefreshTokenRequest;
 import com.course.course_be.dto.response.ApiResponse;
@@ -46,7 +47,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/introspect-refresh-token")
-    public ApiResponse<AuthenticationResponse> introspectRefreshToken(@RequestBody RefreshTokenRequest request) {
+    public ApiResponse<AuthenticationResponse> introspectRefreshToken(@RequestBody @Valid RefreshTokenRequest request) {
         boolean bool = authenticationService.introspectRefreshToken(request);
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(
@@ -56,6 +57,22 @@ public class AuthenticationController {
                 )
                 .build();
     }
+
+    @PostMapping("/introspect-access-token")
+    public ApiResponse<AuthenticationResponse> introspectAccessToken(@RequestBody @Valid AccessTokenRequest request) {
+        boolean bool = authenticationService.introspectAccessToken(request);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(
+                        AuthenticationResponse.builder()
+                                .authenticated(bool)
+                                .build()
+                )
+                .build();
+    }
+
+
+
+
 
 
 }

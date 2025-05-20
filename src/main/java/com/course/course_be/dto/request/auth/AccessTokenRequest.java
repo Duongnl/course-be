@@ -9,10 +9,9 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AuthenticationRequest {
-    /*
-     * Nhan access token cua FB
-     * */
+public class AccessTokenRequest {
+
     @NotBlank(message = "NOT_BLANK")
-    String code;
+    String accessToken;
+
 }

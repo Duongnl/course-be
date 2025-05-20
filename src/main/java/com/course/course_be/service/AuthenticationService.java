@@ -1,5 +1,6 @@
 package com.course.course_be.service;
 
+import com.course.course_be.dto.request.auth.AccessTokenRequest;
 import com.course.course_be.dto.request.auth.AuthenticationRequest;
 import com.course.course_be.dto.request.auth.RefreshTokenRequest;
 import com.course.course_be.dto.response.auth.AuthenticationResponse;
@@ -86,7 +87,7 @@ public class AuthenticationService {
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-            params.add("code", authenticationRequest.getAccessToken());
+            params.add("code", authenticationRequest.getCode());
             params.add("client_id", GOOGLE_CLIENT_ID);
             params.add("client_secret", GOOGLE_CLIENT_SECRET);
             params.add("redirect_uri", GOOGLE_REDIRECT_URI);
@@ -260,6 +261,38 @@ public class AuthenticationService {
             }
             else {
              return  true;
+            }
+        } catch (Exception e) {
+            System.out.println("error >>> " + e.getMessage());
+            throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+        }
+    }
+
+    // kiem tra xem refresh token co hop le khong
+    public boolean introspectAccessToken(AccessTokenRequest accessTokenRequest)
+    {
+        var token = accessTokenRequest.getAccessToken();
+
+//        neu khong co trong db thi da dang xuat
+ 
+
+        try {
+
+            JWSVerifier verifier = new MACVerifier(ACCESS_TOKEN_SECRET.getBytes());
+
+//        token cua  ng dung
+            SignedJWT signedJWT = SignedJWT.parse(token);
+
+//        lay ra han cua token
+            Date expityTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+//        tra ve true hoac flase
+            var verified = signedJWT.verify(verifier);
+            if (!verified || !expityTime.after(new Date())) {
+                throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+            }
+            else {
+                return  true;
             }
         } catch (Exception e) {
             System.out.println("error >>> " + e.getMessage());
