@@ -5,11 +5,13 @@ import com.course.course_be.dto.request.auth.RefreshTokenRequest;
 import com.course.course_be.dto.response.auth.AuthenticationResponse;
 import com.course.course_be.entity.Account;
 import com.course.course_be.entity.Profile;
+import com.course.course_be.entity.RefreshToken;
 import com.course.course_be.exception.AccountErrorCode;
 import com.course.course_be.exception.AppException;
 import com.course.course_be.exception.AuthErrorCode;
 import com.course.course_be.repository.AccountRepository;
 import com.course.course_be.repository.ProfileRepository;
+import com.course.course_be.repository.RefreshTokenRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -24,6 +26,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -34,6 +37,8 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
@@ -45,6 +50,7 @@ import java.util.Optional;
 public class AuthenticationService {
 
      ProfileRepository profileRepository;
+     RefreshTokenRepository refreshTokenRepository;
     // de no kh inject vao contructe cua lombok
     //    key refresh token
     @NonFinal
@@ -68,9 +74,8 @@ public class AuthenticationService {
     @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
     private String GOOGLE_REDIRECT_URI;
 
-
-
     AccountRepository accountRepository;
+    RefreshTokenService refreshTokenService;
 
 
     public AuthenticationResponse loginWithGoogle(AuthenticationRequest authenticationRequest) {
@@ -127,8 +132,14 @@ public class AuthenticationService {
 
             // Tạo token của hệ thống bạn
             var refreshToken = generateRefreshToken(account);
-
             var accessToken = generateAccessToken(account);
+
+            RefreshToken refreshTokenNew = new RefreshToken();
+            refreshTokenNew.setRefreshToken(refreshToken);
+            refreshTokenNew.setAccount(account);
+            refreshTokenNew.setExpireDate(getExpireDateFromToken(refreshToken));
+            refreshTokenRepository.save(refreshTokenNew);
+
 
             return AuthenticationResponse.builder()
                     .refreshToken(refreshToken)
@@ -205,11 +216,25 @@ public class AuthenticationService {
         return signedJWT.getJWTClaimsSet().getSubject(); // Đây là username
     }
 
+    public LocalDate getExpireDateFromToken(String token) throws ParseException, JOSEException {
+        SignedJWT signedJWT = SignedJWT.parse(token);
+        Date expirationDate = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        // Chuyển từ java.util.Date sang java.time.LocalDate
+        return expirationDate.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+    }
 
     // kiem tra xem refresh token co hop le khong
     public boolean introspectRefreshToken(RefreshTokenRequest refreshTokenRequest)
           {
         var token = refreshTokenRequest.getRefreshToken();
+
+//        neu khong co trong db thi da dang xuat
+        if (!refreshTokenRepository.existsByRefreshToken(token)) {
+            throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+        }
 
         try {
 
@@ -223,16 +248,33 @@ public class AuthenticationService {
 
 //        tra ve true hoac flase
             var verified = signedJWT.verify(verifier);
-            if (!verified || !expityTime.after(new Date())) {
+//            Date now = new SimpleDateFormat("yyyy-MM-dd").parse("2025-06-22");
+            if (!verified) {
+
                 throw new AppException(AuthErrorCode.UNAUTHENTICATED);
-            } else {
+            } else if ( !expityTime.after(new Date()))  {
+
+                refreshTokenService.deleteRefreshToken(refreshTokenRequest);
+
+                throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+            }
+            else {
              return  true;
             }
         } catch (Exception e) {
+            System.out.println("error >>> " + e.getMessage());
             throw new AppException(AuthErrorCode.UNAUTHENTICATED);
         }
     }
 
+
+    public Account getMyAccount(String status) {
+        var context = SecurityContextHolder.getContext();
+        String googleId = context.getAuthentication().getName();
+        return accountRepository.findByGoogleIdAndStatus(googleId, status).orElseThrow(
+                () -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND)
+        );
+    }
 
 
     //    tao refresh token
