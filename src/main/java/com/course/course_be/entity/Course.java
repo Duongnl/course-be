@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.w3c.dom.Text;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -34,6 +35,10 @@ public class Course {
 //    Mo ta khoa hoc
     @Column(name = "detail" ,columnDefinition = "TEXT", nullable = true)
     String detail;
+
+//    gia khoa hoc
+    @Column(name = "price", precision = 15, scale = 0, nullable = true)
+    private BigDecimal price;
 
     @Column(name = "image_url", nullable = true, length = 500)
     String imageUrl;
