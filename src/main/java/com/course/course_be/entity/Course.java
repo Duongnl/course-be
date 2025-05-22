@@ -40,6 +40,9 @@ public class Course {
     @Column(name = "price", precision = 15, scale = 0, nullable = true)
     private BigDecimal price;
 
+    @Column(name = "video_url", nullable = true, length = 500)
+    String videoUrl;
+
     @Column(name = "image_url", nullable = true, length = 500)
     String imageUrl;
 
@@ -63,10 +66,10 @@ public class Course {
     @JsonBackReference
     private Category category;
 
-//    Danh sach bai hoc cua khoa hoc
+//    Danh sach chuong cua khoa hoc
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     @JsonManagedReference
-    private Set<Lesson> lessons;
+    private Set<Chapter> chapters;
 
 //    Danh sach hoc vien hoc khoa hoc nay
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)

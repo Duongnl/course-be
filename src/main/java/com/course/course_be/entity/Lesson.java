@@ -69,9 +69,9 @@ public class Lesson {
 
 //    Khoa hoc cua bai hoc
     @ManyToOne
-    @JoinColumn(name = "course_id", nullable = false, referencedColumnName = "id")
+    @JoinColumn(name = "chapter_id", nullable = false, referencedColumnName = "id")
     @JsonBackReference
-    private Course course;
+    private Chapter chapter;
 
 //    Danh sach tien trinh cua bai hoc nay
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
