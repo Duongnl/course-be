@@ -15,5 +15,5 @@ public class RefreshTokenRequest {
     * */
     @NotBlank(message = "NOT_BLANK")
     String refreshToken;
-
+    
 }

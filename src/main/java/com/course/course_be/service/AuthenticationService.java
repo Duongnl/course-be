@@ -187,7 +187,7 @@ public class AuthenticationService {
     public AuthenticationResponse refreshToken (RefreshTokenRequest refreshTokenRequest)  {
         try {
             if (introspectRefreshToken(refreshTokenRequest)){
-                String googleId = getUsernameFromToken(refreshTokenRequest.getRefreshToken());
+                String googleId = getGoogleIdFromToken(refreshTokenRequest.getRefreshToken());
 
                 Account account = accountRepository.findByGoogleId(googleId);
                 if (account == null) {
@@ -211,11 +211,15 @@ public class AuthenticationService {
 
      }
 
-//     Ham lay username tu token
-    public String getUsernameFromToken(String token) throws ParseException, JOSEException {
+//  Ham lay username tu token
+    public String getGoogleIdFromToken(String token) throws ParseException, JOSEException {
         SignedJWT signedJWT = SignedJWT.parse(token);
         return signedJWT.getJWTClaimsSet().getSubject(); // Đây là username
     }
+
+
+
+
 
     public LocalDate getExpireDateFromToken(String token) throws ParseException, JOSEException {
         SignedJWT signedJWT = SignedJWT.parse(token);
@@ -308,6 +312,19 @@ public class AuthenticationService {
                 () -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND)
         );
     }
+
+
+    public Account getMyAccountCurrent() {
+        var context = SecurityContextHolder.getContext();
+        String googleId = context.getAuthentication().getName();
+        Account account = accountRepository.findByGoogleId(googleId);
+        if(account == null) {
+            throw new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND);
+        }
+
+        return accountRepository.findByGoogleId(googleId);
+    }
+
 
 
     //    tao refresh token
