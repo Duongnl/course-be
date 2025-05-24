@@ -2,6 +2,7 @@ package com.course.course_be.controller;
 
 import com.course.course_be.dto.request.auth.AccessTokenRequest;
 import com.course.course_be.dto.request.auth.AuthenticationRequest;
+import com.course.course_be.dto.request.auth.LoginRequest;
 import com.course.course_be.dto.request.auth.RefreshTokenRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.auth.AuthenticationResponse;
@@ -19,6 +20,14 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationController {
 
     AuthenticationService authenticationService;
+
+    @PostMapping("/login")
+    public ApiResponse<AuthenticationResponse> login (@RequestBody LoginRequest loginRequest) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(authenticationService.login(loginRequest))
+                .build();
+
+    }
 
 
 //    Xin access token moi tu refresh token
@@ -45,6 +54,8 @@ public class AuthenticationController {
                 .result(authenticationService.loginWithGoogle(authenticationRequest))
                 .build();
     }
+
+
 
     @PostMapping("/introspect-refresh-token")
     public ApiResponse<AuthenticationResponse> introspectRefreshToken(@RequestBody @Valid RefreshTokenRequest request) {

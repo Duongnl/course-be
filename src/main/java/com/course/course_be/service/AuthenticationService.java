@@ -2,6 +2,7 @@ package com.course.course_be.service;
 
 import com.course.course_be.dto.request.auth.AccessTokenRequest;
 import com.course.course_be.dto.request.auth.AuthenticationRequest;
+import com.course.course_be.dto.request.auth.LoginRequest;
 import com.course.course_be.dto.request.auth.RefreshTokenRequest;
 import com.course.course_be.dto.response.auth.AuthenticationResponse;
 import com.course.course_be.entity.Account;
@@ -28,6 +29,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -149,11 +152,43 @@ public class AuthenticationService {
                     .build();
         } catch (Exception e) {
             // Các lỗi khác
-            System.err.println("Lỗi không xác định: " + e.getMessage());
+
             throw new AppException(AuthErrorCode.UNAUTHENTICATED);
         }
 
     }
+
+
+
+    public AuthenticationResponse login(LoginRequest request) {
+        Account account = accountRepository.findByUsername(request.getUsername());
+
+        if ( account == null) {
+            throw new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND);
+        }
+        if (account.getPassword().equals(request.getPassword().trim())) {
+            var refreshToken = generateRefreshToken(account);
+            var accessToken = generateAccessToken(account);
+
+            RefreshToken refreshTokenNew = new RefreshToken();
+            refreshTokenNew.setRefreshToken(refreshToken);
+            refreshTokenNew.setAccount(account);
+            try {
+                refreshTokenNew.setExpireDate(getExpireDateFromToken(refreshToken));
+                refreshTokenRepository.save(refreshTokenNew);
+            }catch (Exception e) {
+                throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+            }
+            return AuthenticationResponse.builder()
+                    .refreshToken(refreshToken)
+                    .accessToken(accessToken)
+                    .authenticated(true)
+                    .build();
+        } else {
+            throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+        }
+    }
+
 
     public Account handleSaveNewAccount (Map<String, Object> userInfo ) {
         String email = (String) userInfo.get("email");
@@ -187,12 +222,13 @@ public class AuthenticationService {
     public AuthenticationResponse refreshToken (RefreshTokenRequest refreshTokenRequest)  {
         try {
             if (introspectRefreshToken(refreshTokenRequest)){
-                String googleId = getGoogleIdFromToken(refreshTokenRequest.getRefreshToken());
+                String googleId = getIdFromToken(refreshTokenRequest.getRefreshToken());
 
-                Account account = accountRepository.findByGoogleId(googleId);
-                if (account == null) {
-                    throw new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND);
-                } else if (account.getStatus().equals("inactive")) {
+                Account account = accountRepository.findById(googleId).orElseThrow(
+                        () -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND)
+                );
+
+               if (account.getStatus().equals("inactive")) {
                     throw new AppException(AuthErrorCode.ACCOUNT_LOCKED);
                 }
 
@@ -212,7 +248,7 @@ public class AuthenticationService {
      }
 
 //  Ham lay username tu token
-    public String getGoogleIdFromToken(String token) throws ParseException, JOSEException {
+    public String getIdFromToken(String token) throws ParseException, JOSEException {
         SignedJWT signedJWT = SignedJWT.parse(token);
         return signedJWT.getJWTClaimsSet().getSubject(); // Đây là username
     }
@@ -278,7 +314,7 @@ public class AuthenticationService {
         var token = accessTokenRequest.getAccessToken();
 
 //        neu khong co trong db thi da dang xuat
- 
+
 
         try {
 
@@ -305,24 +341,13 @@ public class AuthenticationService {
     }
 
 
-    public Account getMyAccount(String status) {
-        var context = SecurityContextHolder.getContext();
-        String googleId = context.getAuthentication().getName();
-        return accountRepository.findByGoogleIdAndStatus(googleId, status).orElseThrow(
-                () -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND)
-        );
-    }
 
 
     public Account getMyAccountCurrent() {
         var context = SecurityContextHolder.getContext();
-        String googleId = context.getAuthentication().getName();
-        Account account = accountRepository.findByGoogleId(googleId);
-        if(account == null) {
-            throw new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND);
-        }
-
-        return accountRepository.findByGoogleId(googleId);
+        String Id = context.getAuthentication().getName();
+        return accountRepository.findById(Id).orElseThrow(
+                () -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND));
     }
 
 
@@ -331,7 +356,7 @@ public class AuthenticationService {
     public String generateRefreshToken(Account account) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);// tao header
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder() // tao body
-                .subject(account.getGoogleId())
+                .subject(account.getId())
                 .issuer("course.com") // token nay dc issuer tu ai
                 .issueTime(new Date()) // thoi diem hien tai
                 .expirationTime(new Date(
@@ -354,7 +379,7 @@ public class AuthenticationService {
     public String generateAccessToken(Account account) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);// tao header
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder() // tao body
-                .subject(account.getGoogleId())
+                .subject(account.getId())
                 .issuer("course.com") // token nay dc issuer tu ai
                 .issueTime(new Date()) // thoi diem hien tai
                 .expirationTime(new Date(

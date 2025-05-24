@@ -27,14 +27,20 @@ public class Account {
     String id;
 
 //    Id cua fb khi dang nhap
-    @Column(name = "google_id", nullable = false)
+    @Column(name = "google_id", nullable = true)
     String googleId;
 
 //    Email cua tai khoan
     @Column(name = "email", nullable = true)
     String email;
 
-//    Sdt cua tai khoan
+    @Column(name = "username", nullable = true)
+    String username;
+
+    @Column(name = "password", nullable = true)
+    String password;
+
+    //    Sdt cua tai khoan
     @Column(name = "phone_number", nullable = true)
     String phoneNumber;
 
