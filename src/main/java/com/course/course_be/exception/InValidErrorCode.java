@@ -8,7 +8,8 @@ public enum InValidErrorCode implements ErrorCode {
     JSON_INVALID ("INVALID_1", "Invalid json", HttpStatus.BAD_REQUEST),
     NOT_BLANK ("INVALID_2", "Invalid blank", HttpStatus.BAD_REQUEST),
     NOT_NULL ("INVALID_3", "Invalid null", HttpStatus.BAD_REQUEST),
-
+    USER_NAME_INVALID("INVALID_4","Invalid user name", HttpStatus.BAD_REQUEST),
+    PASSWORD_INVALID("INVALID_5", "Invalid password", HttpStatus.BAD_REQUEST),
     ;
 
     InValidErrorCode(String code, String message, HttpStatus httpStatus) {
