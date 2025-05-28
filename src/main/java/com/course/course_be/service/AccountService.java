@@ -20,9 +20,7 @@ public class AccountService {
 
     public CurrentAccountResponse getCurrentAccount() {
         Account account= authenticationService.getMyAccountCurrent();
-        System.out.println(account.getGoogleId());
         CurrentAccountResponse currentAccountResponse = accountMapper.toCurrentAccountResponse(account);
-        System.out.println(currentAccountResponse );
         return accountMapper.toCurrentAccountResponse(account);
 
     }
