@@ -49,7 +49,6 @@ public class AuthenticationController {
 //  Dang nhap bang google
     @PostMapping("/google")
     public ApiResponse<AuthenticationResponse> loginWithGoogle(@RequestBody AuthenticationRequest authenticationRequest) {
-        System.out.println("authenticationRequest >>> " + authenticationRequest);
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.loginWithGoogle(authenticationRequest))
                 .build();

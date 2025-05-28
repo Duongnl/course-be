@@ -30,7 +30,6 @@ public class RefreshTokenService {
         }
 
         try {
-            System.out.println("refresh token >>> "+ refreshToken.getId());
             refreshTokenRepository.delete(refreshToken);
         } catch (Exception e) {
             throw new AppException(RefreshTokenErrorCode.NOT_FOUNT);

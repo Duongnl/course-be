@@ -20,9 +20,6 @@ import java.util.List;
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        System.out.println("Authorization Header: " + request.getHeader("Authorization"));
-        System.out.println("Origin: " + request.getHeader("Origin"));
-        System.out.println("Method: " + request.getMethod());
 
         ErrorCode errorCode = AuthErrorCode.UNAUTHENTICATED;
 
