@@ -115,10 +115,6 @@ public class AuthenticationService {
             String fullName = (String) userInfo.get("name");            // Tên đầy đủ
             String pictureUrl = (String) userInfo.get("picture");
 
-            System.out.println("email >>> " + email);
-            System.out.println("googleId >>> " + googleId);
-            System.out.println("fullName >>> " + fullName);
-            System.out.println("pictureUrl >>> " + pictureUrl);
 
 
             Account account = accountRepository.findByGoogleId(googleId);
@@ -126,7 +122,6 @@ public class AuthenticationService {
 //            tk moi
             if (account == null) {
                 account   =   handleSaveNewAccount(userInfo);
-                System.out.println("account >>> " + account);
             }
 //            tk cu bi khoa
             else if (account.equals("inactive")) {

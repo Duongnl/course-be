@@ -39,7 +39,7 @@ public class ApiResponse <T>{
     Integer totalPages;
 
 //    Tong phan tu
-    Integer totalItems;
+    Long totalItems;
 
 //    Page hien tai
     Integer currentPage;
