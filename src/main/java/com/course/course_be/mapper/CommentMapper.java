@@ -1,7 +1,16 @@
 package com.course.course_be.mapper;
 
+import com.course.course_be.dto.response.comment.CommentResponse;
+import com.course.course_be.entity.Comment;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface CommentMapper {
+    @Mapping(source="account.id", target ="authorId")
+    @Mapping(source="account.profile.name", target ="authorName")
+    @Mapping(source="lesson.id", target ="lessonId")
+    @Mapping(source="lesson.name", target ="lessonName")
+    public CommentResponse toCommentResponse(Comment photo);
+
 }
