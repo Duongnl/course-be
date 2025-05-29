@@ -46,6 +46,7 @@ public class Chapter {
 
     @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL)
     @JsonManagedReference
+    @OrderBy("lessonNumber ASC")
     private Set<Lesson> lessons;
 
 

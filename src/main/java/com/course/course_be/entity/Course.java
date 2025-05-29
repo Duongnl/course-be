@@ -69,6 +69,7 @@ public class Course {
 //    Danh sach chuong cua khoa hoc
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     @JsonManagedReference
+    @OrderBy("chapterNumber ASC")
     private Set<Chapter> chapters;
 
 //    Danh sach hoc vien hoc khoa hoc nay
