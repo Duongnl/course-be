@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -35,7 +36,10 @@ public class Category {
     @Column(name = "status", nullable = false)
     String status;
 
-//    Danh sach khoa hoc cua danh muc
+    @Column(name = "created_at", nullable = false)
+    LocalDateTime createdAt;
+
+    //    Danh sach khoa hoc cua danh muc
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     @JsonManagedReference
     private Set<Course> courses;

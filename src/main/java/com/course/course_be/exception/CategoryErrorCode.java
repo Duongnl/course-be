@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum CategoryErrorCode implements ErrorCode {
-
+    CATEGORY_NOT_FOUND  ("CATEGORY_1","Category not found", HttpStatus.NOT_FOUND)
     ;
 
     CategoryErrorCode(String code, String message, HttpStatus httpStatus) {
