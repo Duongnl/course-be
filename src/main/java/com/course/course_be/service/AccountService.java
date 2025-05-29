@@ -24,5 +24,4 @@ public class AccountService {
         return accountMapper.toCurrentAccountResponse(account);
 
     }
-
 }
