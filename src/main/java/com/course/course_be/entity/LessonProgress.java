@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "lesson_progress")
 @Builder
@@ -29,6 +31,10 @@ public class LessonProgress {
 //    Trang thai tien trinh
     @Column(name = "status", nullable = false)
     String status;
+
+
+    @Column(name = "viewed_at", nullable = false)
+    LocalDateTime viewedAt;
 
 //   Tai khoan hoc vien
     @ManyToOne

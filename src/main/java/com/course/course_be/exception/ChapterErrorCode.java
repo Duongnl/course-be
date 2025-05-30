@@ -4,11 +4,11 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public enum LessonErrorCode implements ErrorCode {
-    LESSON_NOT_FOUND  ("LESSON_1","Lesson not found", HttpStatus.NOT_FOUND),
+public enum ChapterErrorCode implements ErrorCode{
+    CHAPTER_NOT_FOUND  ("CHAPTER_1","Chapter not found", HttpStatus.NOT_FOUND),
     ;
 
-    LessonErrorCode(String code, String message, HttpStatus httpStatus) {
+    ChapterErrorCode(String code, String message, HttpStatus httpStatus) {
         this.code = code;
         this.message = message;
         this.httpStatus = httpStatus;
@@ -17,4 +17,5 @@ public enum LessonErrorCode implements ErrorCode {
     private String code;
     private String message;
     private HttpStatus httpStatus;
+
 }
