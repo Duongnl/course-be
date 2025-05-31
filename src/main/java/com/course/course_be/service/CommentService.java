@@ -32,7 +32,7 @@ public class CommentService {
         ApiResponse<List<CommentResponse>> apiResponse = new ApiResponse<>();
 
         // loai tru status khong can thiet
-        String statusNot = "rejected";
+        String statusNot = "inactive";
 
         // Cau hinh phan trang va sap xep
         Pageable pageable = PageRequest.of(filter.getPageIndex(), filter.getPageSize(),
