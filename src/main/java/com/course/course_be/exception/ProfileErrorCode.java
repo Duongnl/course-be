@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ProfileErrorCode implements ErrorCode {
+    PROFILE_NOT_FOUND  ("PROFILE_1","Profile not found", HttpStatus.UNAUTHORIZED),
     ;
 
     ProfileErrorCode(String code, String message, HttpStatus httpStatus) {
