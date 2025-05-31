@@ -1,7 +1,6 @@
 package com.course.course_be.service;
 
 import com.course.course_be.dto.request.profile.ProfileUpdateRequest;
-import com.course.course_be.dto.response.profile.ProfileResponse;
 import com.course.course_be.dto.response.profile.UserProfileResponse;
 import com.course.course_be.entity.Account;
 import com.course.course_be.entity.Profile;

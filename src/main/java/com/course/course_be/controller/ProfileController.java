@@ -2,9 +2,7 @@ package com.course.course_be.controller;
 
 import com.course.course_be.dto.request.profile.ProfileUpdateRequest;
 import com.course.course_be.dto.response.ApiResponse;
-import com.course.course_be.dto.response.profile.ProfileResponse;
 import com.course.course_be.dto.response.profile.UserProfileResponse;
-import com.course.course_be.entity.Profile;
 import com.course.course_be.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;

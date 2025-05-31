@@ -2,7 +2,6 @@ package com.course.course_be.mapper;
 
 
 import com.course.course_be.dto.request.profile.ProfileUpdateRequest;
-import com.course.course_be.dto.response.profile.ProfileResponse;
 import com.course.course_be.dto.response.profile.UserProfileResponse;
 import com.course.course_be.entity.Account;
 import com.course.course_be.entity.Profile;
@@ -21,7 +20,6 @@ public interface ProfileMapper {
     @Mapping(target = "sex", source = "sex")
     Profile toProfile(ProfileUpdateRequest request);
 
-    ProfileResponse toProfileResponse(Profile profile);
 
     @Mapping(source = "profile.avatarUrl", target = "avatarUrl")
     @Mapping(source = "account.email", target = "email")
