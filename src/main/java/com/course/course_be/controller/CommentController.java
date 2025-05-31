@@ -20,10 +20,8 @@ public class CommentController {
 
     @GetMapping("/admin/comment")
     public ApiResponse<List<CommentResponse>> getAllComments(@ModelAttribute CommentFilterRequest commentFilterRequest) {
-        List<CommentResponse> comments = commentService.getListComment(commentFilterRequest);
-
-        return ApiResponse.<List<CommentResponse>>builder()
-                .result(comments)
-                .build();
+        return commentService.getListComment(commentFilterRequest);
     }
+
+
 }
