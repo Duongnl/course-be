@@ -12,6 +12,8 @@ public class AccountResponse {
     private String name;
     private String email;
     private String username;
+    private String phone;
+    private String avatarUrl;
     private LocalDateTime createdAt;
     private String status;
     private String role;
