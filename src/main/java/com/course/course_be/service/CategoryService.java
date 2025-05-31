@@ -28,7 +28,6 @@ public class CategoryService {
 
     public List<CategoryResponse> getAll(String name, String detail, String status, String sort) {
         name = name == null ? "" : name;
-        detail = detail == null ? "" : detail;
         Sort s = Sort.by(Sort.Direction.DESC, "createdAt");
         if(sort != null && !sort.isEmpty()) {
             String[] sortParams = sort.split("\\.");
@@ -41,10 +40,13 @@ public class CategoryService {
 
         List<Category> list;
         if (status == null || status.isEmpty()) {
-            list = categoryRepository.findByNameContainingAndDetailContainingAndStatusNot(name, detail, "deleted",s);
+            list = detail != null ?
+                    categoryRepository.findByNameContainingAndDetailContainingAndStatusNot(name, detail, "deleted",s)
+                    : categoryRepository.findByNameContainingAndStatusNot(name,"deleted",s);
         } else {
             List<String> statusList = Arrays.asList(status.split("\\."));
-            list = categoryRepository.findByNameContainingAndDetailContainingAndStatusIn(name, detail, statusList, s);
+            list = detail != null ? categoryRepository.findByNameContainingAndDetailContainingAndStatusIn(name, detail, statusList, s)
+                                    : categoryRepository.findByNameContainingAndStatusIn(name,statusList,s);
         }
 
         return categoryMapper.toCategoryResponseList(list);
@@ -52,13 +54,14 @@ public class CategoryService {
 
     public Page<CategoryResponse> getAllPaging(String name, String detail, String status, Pageable pageable) {
         name = name == null ? "" : name;
-        detail = detail == null ? "" : detail;
         Page<Category> page;
         if (status == null || status.isEmpty()) {
-            page = categoryRepository.findByNameContainingAndDetailContainingAndStatusNot(name, detail, "deleted", pageable);
+            page = detail != null ? categoryRepository.findByNameContainingAndDetailContainingAndStatusNot(name, detail, "deleted", pageable)
+            : categoryRepository.findByNameContainingAndStatusNot(name,"deleted",pageable);
         } else {
             List<String> statusList = Arrays.asList(status.split("\\."));
-            page = categoryRepository.findByNameContainingAndDetailContainingAndStatusIn(name, detail, statusList, pageable);
+            page = detail != null ? categoryRepository.findByNameContainingAndDetailContainingAndStatusIn(name, detail, statusList, pageable)
+                        : categoryRepository.findByNameContainingAndStatusIn(name,statusList,pageable);
         }
         return page.map(categoryMapper::toCategoryResponse);
     }
