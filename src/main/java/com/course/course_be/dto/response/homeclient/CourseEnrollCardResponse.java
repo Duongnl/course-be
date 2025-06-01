@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 
-public class CourseStudyingResponse {
+public class CourseEnrollCardResponse {
     String name;
     String imageUrl;
     String id;
