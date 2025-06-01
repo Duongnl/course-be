@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum LessonErrorCode implements ErrorCode {
+    LESSON_NOT_FOUND  ("LESSON_1","Lesson not found", HttpStatus.NOT_FOUND),
     ;
 
     LessonErrorCode(String code, String message, HttpStatus httpStatus) {
