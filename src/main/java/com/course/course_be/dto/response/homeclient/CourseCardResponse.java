@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CourseSearchingResponse {
+public class CourseCardResponse {
     String name;
     String imageUrl;
     String id;

@@ -3,7 +3,7 @@ package com.course.course_be.service;
 import com.course.course_be.dto.request.category.CreateCategoryRequest;
 import com.course.course_be.dto.request.category.UpdateCategoryRequest;
 import com.course.course_be.dto.response.category.CategoryResponse;
-import com.course.course_be.dto.response.homeclient.CourseSearchingResponse;
+import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.entity.Category;
 import com.course.course_be.entity.Course;
 import com.course.course_be.exception.AppException;
@@ -59,13 +59,13 @@ public class CategoryService {
         return categoryMapper.toCategoryResponseList(list);
     }
 
-    public List<CourseSearchingResponse> getCourseByCategory(String id, int page, int size) {
+    public List<CourseCardResponse> getCourseByCategory(String id, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         // Tìm category
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new AppException(CategoryErrorCode.CATEGORY_NOT_FOUND));
 
-        List<CourseSearchingResponse> results = new ArrayList<CourseSearchingResponse>();
+        List<CourseCardResponse> results = new ArrayList<CourseCardResponse>();
         // Lấy danh sách khóa học theo category, chỉ lấy ACTIVE
         List<Course> coursePage = courseRepository.findByCategoryAndStatus(category, "active", pageable);
         // Convert sang response DTO

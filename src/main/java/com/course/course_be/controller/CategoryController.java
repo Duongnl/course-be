@@ -4,7 +4,7 @@ import com.course.course_be.dto.request.category.CreateCategoryRequest;
 import com.course.course_be.dto.request.category.UpdateCategoryRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.category.CategoryResponse;
-import com.course.course_be.dto.response.homeclient.CourseSearchingResponse;
+import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.service.CategoryService;
 import com.course.course_be.utils.PageableUtil;
 import jakarta.validation.Valid;
@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +24,7 @@ import java.util.List;
 public class CategoryController {
 
     CategoryService categoryService;
+
 
     @GetMapping
     public ApiResponse<List<CategoryResponse>> getAllCategory(@RequestParam(required = false) Integer page,
@@ -50,8 +50,8 @@ public class CategoryController {
     }
 
     @GetMapping ("/search/{id}")
-    public ApiResponse<List<CourseSearchingResponse>> getCourseByCategory (@PathVariable String id , @RequestParam int page , @RequestParam int size ) {
-        return ApiResponse.<List<CourseSearchingResponse>>builder().result(categoryService.getCourseByCategory(id,page,size)).build();
+    public ApiResponse<List<CourseCardResponse>> getCourseByCategory (@PathVariable String id , @RequestParam int page , @RequestParam int size ) {
+        return ApiResponse.<List<CourseCardResponse>>builder().result(categoryService.getCourseByCategory(id,page,size)).build();
     }
 
     @PostMapping

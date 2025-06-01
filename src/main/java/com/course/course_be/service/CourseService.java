@@ -1,6 +1,6 @@
 package com.course.course_be.service;
 
-import com.course.course_be.dto.response.homeclient.CourseSearchingResponse;
+import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.entity.Course;
 import com.course.course_be.mapper.CourseMapper;
 import com.course.course_be.repository.CourseRepository;
@@ -25,15 +25,15 @@ public class CourseService {
 
 
 
-    public Page<CourseSearchingResponse> searchCoursesByName(String keyword, Pageable pageable) {
+    public Page<CourseCardResponse> searchCoursesByName(String keyword, Pageable pageable) {
         Page<Course> coursesPage = courseRepository.findByNameContainingIgnoreCase(keyword, pageable);
         return coursesPage.map(courseMapper::toCourseSearchingResponse);
     }
 
-    public List<CourseSearchingResponse> getHotCourse (int page , int size)
+    public List<CourseCardResponse> getHotCourse (int page , int size)
     {
         Pageable pageable = PageRequest.of(page, size);
-        List<CourseSearchingResponse> coursesHot = new ArrayList<>();
+        List<CourseCardResponse> coursesHot = new ArrayList<>();
         List<Course> ListCourse = new ArrayList<Course>();
         ListCourse = courseRepository.getHotCourse(pageable);
         for (Course course : ListCourse )
@@ -42,10 +42,10 @@ public class CourseService {
         }
         return coursesHot;
     }
-    public List<CourseSearchingResponse> getNewestCourse (int page , int size)
+    public List<CourseCardResponse> getNewestCourse (int page , int size)
     {
         Pageable pageable = PageRequest.of(page, size);
-        List<CourseSearchingResponse> coursesNewest = new ArrayList<>();
+        List<CourseCardResponse> coursesNewest = new ArrayList<>();
         List<Course> ListCourse = new ArrayList<Course>();
         ListCourse = courseRepository.getNewestCourse(pageable);
         for (Course course : ListCourse)

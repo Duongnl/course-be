@@ -1,8 +1,7 @@
 package com.course.course_be.service;
 
-import com.course.course_be.dto.response.homeclient.CourseStudyingResponse;
+import com.course.course_be.dto.response.homeclient.CourseEnrollCardResponse;
 import com.course.course_be.entity.Account;
-import com.course.course_be.entity.Course;
 import com.course.course_be.entity.CourseEnrollment;
 import com.course.course_be.mapper.CourseMapper;
 import lombok.AccessLevel;
@@ -22,7 +21,7 @@ public class CourseEnrollmentService {
     AuthenticationService authenticationService;
     CourseMapper courseMapper;
 
-    public List<CourseStudyingResponse> getCourseEnroll() {
+    public List<CourseEnrollCardResponse> getCourseEnroll() {
         Account account = authenticationService.getMyAccountCurrent();
 
         List<CourseEnrollment> sortedEnrollments = new ArrayList<>(account.getCourseEnrollments());

@@ -1,7 +1,7 @@
 package com.course.course_be.controller;
 
 import com.course.course_be.dto.response.ApiResponse;
-import com.course.course_be.dto.response.homeclient.CourseStudyingResponse;
+import com.course.course_be.dto.response.homeclient.CourseEnrollCardResponse;
 import com.course.course_be.service.CourseEnrollmentService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +20,9 @@ public class CourseEnrollmentController {
     CourseEnrollmentService courseEnrollmentService;
 
     @GetMapping("/course-enroll")
-    public ApiResponse<List<CourseStudyingResponse>> getCourseStudying ()
+    public ApiResponse<List<CourseEnrollCardResponse>> getCourseStudying ()
     {
-        return ApiResponse.<List<CourseStudyingResponse>>builder()
+        return ApiResponse.<List<CourseEnrollCardResponse>>builder()
                 .result(courseEnrollmentService.getCourseEnroll())
                 .build();
     }

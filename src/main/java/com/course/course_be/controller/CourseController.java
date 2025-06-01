@@ -1,7 +1,7 @@
 package com.course.course_be.controller;
 
 import com.course.course_be.dto.response.ApiResponse;
-import com.course.course_be.dto.response.homeclient.CourseSearchingResponse;
+import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.service.CourseService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -23,32 +23,32 @@ public class CourseController {
 
 
     @GetMapping("/hot")
-    public ApiResponse<List<CourseSearchingResponse>> hotCourses(
+    public ApiResponse<List<CourseCardResponse>> hotCourses(
             @RequestParam int page,
             @RequestParam int size
     ) {
-        return ApiResponse.<List<CourseSearchingResponse>>builder().result(courseService.getHotCourse(page, size)).build();
+        return ApiResponse.<List<CourseCardResponse>>builder().result(courseService.getHotCourse(page, size)).build();
     }
 
     @GetMapping("/newest")
-    public ApiResponse<List<CourseSearchingResponse>> newestCourse
+    public ApiResponse<List<CourseCardResponse>> newestCourse
             (
                     @RequestParam int page,
                     @RequestParam int size) {
-        return ApiResponse.<List<CourseSearchingResponse>>builder().result(courseService.getNewestCourse(page,size)).build();
+        return ApiResponse.<List<CourseCardResponse>>builder().result(courseService.getNewestCourse(page,size)).build();
     }
 
     @GetMapping("/search")
-    public ApiResponse<Page<CourseSearchingResponse>> searchCourses(
+    public ApiResponse<List<CourseCardResponse>> searchCourses(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<CourseSearchingResponse> results = courseService.searchCoursesByName(keyword, pageable);
+        Page<CourseCardResponse> results = courseService.searchCoursesByName(keyword, pageable);
 
-        return ApiResponse.<Page<CourseSearchingResponse>>builder()
-                .result(results)
+        return ApiResponse.<List<CourseCardResponse>>builder()
+                .result(results.stream().toList())
                 .build();
     }
 
