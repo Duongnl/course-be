@@ -30,7 +30,7 @@ public class CourseEnrollmentService {
         sortedEnrollments.sort((a, b) -> b.getEnrolledAt().compareTo(a.getEnrolledAt())); // mới nhất trước
 
         return sortedEnrollments.stream()
-                .limit(5)
+                .limit(4)
                 .map(enrollment -> courseMapper.toCourseStudyingResponse(enrollment.getCourse()))
                 .collect(Collectors.toList());
     }
