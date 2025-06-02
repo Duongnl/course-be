@@ -1,11 +1,14 @@
 package com.course.course_be.controller;
 
+import com.course.course_be.dto.request.account.CreateAccountRequest;
+import com.course.course_be.dto.request.account.UpdateAccountRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.account.AccountResponse;
 import com.course.course_be.dto.response.account.CurrentAccountResponse;
 import com.course.course_be.dto.response.account.ResultPaginationDTO;
 import com.course.course_be.entity.Account;
 import com.course.course_be.service.AccountService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -13,6 +16,8 @@ import com.turkraft.springfilter.boot.Filter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/account")
@@ -33,6 +38,43 @@ public class AccountController {
 
       return ApiResponse.<ResultPaginationDTO>builder()
               .result(accountService.getAllAccounts(spec, pageable))
+              .build();
+   }
+
+   @PostMapping
+   public ApiResponse<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
+      return ApiResponse.<AccountResponse>builder()
+              .result(accountService.createNew(request))
+              .build();
+   }
+
+   @GetMapping("/{id}")
+   public ApiResponse<AccountResponse> getAccountById(@PathVariable String id) {
+      return ApiResponse.<AccountResponse>builder()
+              .result(accountService.findById(id))
+              .build();
+   }
+
+   @GetMapping
+   public ApiResponse<List<AccountResponse>> getAllAccounts() {
+      return ApiResponse.<List<AccountResponse>>builder()
+              .result(accountService.findAll())
+              .build();
+   }
+
+   @PutMapping("/{id}")
+   public ApiResponse<AccountResponse> updateAccount(@PathVariable String id,
+                                                     @Valid @RequestBody UpdateAccountRequest request) {
+      return ApiResponse.<AccountResponse>builder()
+              .result(accountService.update(id, request))
+              .build();
+   }
+
+   @DeleteMapping("/{id}")
+   public ApiResponse<String> deleteAccount(@PathVariable String id) {
+      accountService.delete(id);
+      return ApiResponse.<String>builder()
+              .message("Account deleted successfully")
               .build();
    }
 
