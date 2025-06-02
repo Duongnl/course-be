@@ -69,7 +69,9 @@ public class Account {
 //    Danh sach khoa hoc ma hoc vien da dky
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     @JsonManagedReference
+    @OrderBy("enrolledAt DESC")
     private Set<CourseEnrollment> courseEnrollments;
+
 
 //    Danh sach tien trinh cua tai khoan
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)

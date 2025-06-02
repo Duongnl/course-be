@@ -4,6 +4,7 @@ import com.course.course_be.dto.request.category.CreateCategoryRequest;
 import com.course.course_be.dto.request.category.UpdateCategoryRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.category.CategoryResponse;
+import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.service.CategoryService;
 import com.course.course_be.utils.PageableUtil;
 import jakarta.validation.Valid;
@@ -12,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +25,7 @@ public class CategoryController {
 
     CategoryService categoryService;
 
+
     @GetMapping
     public ApiResponse<List<CategoryResponse>> getAllCategory(@RequestParam(required = false) Integer page,
                                                               @RequestParam(required = false) Integer perPage,
@@ -32,7 +33,6 @@ public class CategoryController {
                                                               @RequestParam(required = false) String name,
                                                               @RequestParam(required = false) String detail,
                                                               @RequestParam(required = false) String status) {
-
         if (page != null) {
             int pageIndex = (page > 0) ? page - 1 : 0;
             int pageSize = (perPage!= null && perPage > 0) ? perPage : 10;
@@ -49,12 +49,18 @@ public class CategoryController {
         ).build();
     }
 
+    @GetMapping ("/search/{id}")
+    public ApiResponse<List<CourseCardResponse>> getCourseByCategory (@PathVariable String id , @RequestParam int page , @RequestParam int size ) {
+        return ApiResponse.<List<CourseCardResponse>>builder().result(categoryService.getCourseByCategory(id,page,size)).build();
+    }
+
     @PostMapping
     public ApiResponse<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
         return  ApiResponse.<CategoryResponse>builder().result(
                 categoryService.createNew(request)
         ).build();
     }
+
 
     @PutMapping("/{id}")
     public ApiResponse<CategoryResponse> updateCategory(@PathVariable String id, @Valid @RequestBody UpdateCategoryRequest request) {
