@@ -1,13 +1,11 @@
 package com.course.course_be.repository;
 
 import com.course.course_be.entity.Comment;
-import com.course.course_be.entity.RefreshToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import java.util.Optional;
 
 public interface CommentRepository extends JpaRepository<Comment, Integer> {
     // Tìm theo cả 3 trường, status không phải '...'
