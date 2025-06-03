@@ -76,6 +76,39 @@ public interface CourseRepository extends JpaRepository<Course, String> {
             """)
     List<Course> getNewestCourse(Pageable pageable);
 
+    @Query("""
+                SELECT c FROM Course c
+                LEFT JOIN c.courseEnrollments ce
+                WHERE c.status = 'active'
+                  AND LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  AND (:categoryId IS NULL OR c.category.id = :categoryId)
+                GROUP BY c
+                ORDER BY COUNT(ce) DESC
+            """)
+    Page<Course> searchByKeywordAndCategoryOrderByHot(@Param("keyword") String keyword,
+                                                      @Param("categoryId") String categoryId,
+                                                      Pageable pageable);
+
+    @Query("""
+                SELECT c FROM Course c
+                WHERE c.status = 'active'
+                  AND LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  AND (:categoryId IS NULL OR c.category.id = :categoryId)
+                ORDER BY c.createdAt DESC
+            """)
+    Page<Course> searchByKeywordAndCategoryOrderByNewest(@Param("keyword") String keyword,
+                                                         @Param("categoryId") String categoryId,
+                                                         Pageable pageable);
+
+    @Query("""
+                SELECT c FROM Course c
+                WHERE c.status = 'active'
+                  AND LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  AND (:categoryId IS NULL OR c.category.id = :categoryId)
+            """)
+    Page<Course> searchByKeywordAndCategory(@Param("keyword") String keyword,
+                                            @Param("categoryId") String categoryId,
+                                            Pageable pageable);
 
     List<Course> findByCategoryAndStatus(Category category, String status, Pageable pageable);
 

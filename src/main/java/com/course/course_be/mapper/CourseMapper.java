@@ -11,6 +11,6 @@ public interface CourseMapper {
 
     public CourseEnrollCardResponse toCourseStudyingResponse (Course course);
     public CourseInfoResponse toCourseInfoResponse(Course course);
-    public CourseCardResponse toCourseSearchingResponse (Course course);
+    public CourseCardResponse toCourseCardResponse(Course course);
 
 }

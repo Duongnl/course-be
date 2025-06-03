@@ -30,15 +30,4 @@ public interface CategoryRepository extends JpaRepository<Category, String> {
             String statusNot,
             Pageable pageable);
 
-    List<Category> findByNameContainingAndStatusIn(
-            String name, List<String> status, Sort sort);
-
-    List<Category> findByNameContainingAndDetailContainingAndStatusIn(
-            String name, String detail, List<String> status, Sort sort);
-
-    List<Category> findByNameContainingAndStatusNot(
-            String name, String statusNot, Sort sort);
-
-    List<Category> findByNameContainingAndDetailContainingAndStatusNot(
-            String name, String detail, String statusNot, Sort sort);
 }
