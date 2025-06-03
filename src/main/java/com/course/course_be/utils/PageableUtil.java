@@ -6,20 +6,21 @@ import org.springframework.data.domain.Sort;
 
 public class PageableUtil {
     public static Pageable createPageable(Integer page, Integer size, String sort) {
-        if (page == null || size == null) {
-            return Pageable.unpaged();
-        }
         Sort s = Sort.by(Sort.Direction.DESC, "createdAt");
 
-        if (sort == null || sort.isBlank()) {
-            return PageRequest.of(page, size,s);
-        }
-        String[] sortParams = sort.split("\\.");
-        Sort.Direction direction = Sort.Direction.ASC;
-        if (sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")) {
-            direction = Sort.Direction.DESC;
+        if (sort != null) {
+            String[] sortParams = sort.split("\\.");
+            Sort.Direction direction = Sort.Direction.ASC;
+            if (sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")) {
+                direction = Sort.Direction.DESC;
+            }
+            s = Sort.by(direction, sortParams[0]);
         }
 
-        return PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
+        if (page == null) {
+            return Pageable.unpaged(s);
+        }
+        int pageSize = size !=  null ? size : 10;
+        return PageRequest.of(page - 1, pageSize, s);
     }
 }
