@@ -1,5 +1,6 @@
 package com.course.course_be.service;
 
+import com.course.course_be.dto.request.submissionadmin.GradedSubmissionRequest;
 import com.course.course_be.dto.request.submissionclient.SubmissionClientRequest;
 import com.course.course_be.dto.response.submissionadmin.SubmissionAdminResponse;
 import com.course.course_be.entity.Account;
@@ -72,7 +73,7 @@ public class SubmissionService {
 
     }
 
-    public Page<Submission> filterSubmission ( Integer page,
+    public Page<SubmissionAdminResponse> filterSubmission ( Integer page,
                                                             Integer perPage,
                                                             String courseName,
                                                             String lessonName,
@@ -83,7 +84,8 @@ public class SubmissionService {
                                                             String to
     ) {
 
-        page = page - 1;
+
+        page = page ==null ? 1 : page - 1;
         perPage =  perPage  == null ? 10 : perPage;
         Pageable pageable = PageRequest.of(page, perPage);
 
@@ -132,30 +134,29 @@ public class SubmissionService {
                 pageable
         );;
 
-
-//        System.out.println("page >>> " + page);
-//        System.out.println("perPage >>> " + perPage);
-//        System.out.println("courseName >>> " + courseName);
-//        System.out.println("lessonName >>> " + lessonName);
-//        System.out.println("submitterName >>> " + submitterName);
-//        System.out.println("submitterEmail >>> " + submitterEmail);
-//        System.out.println("status >>> " + status);
-//        System.out.println("from >>> " + localDateTimeFrom);
-//        System.out.println("to >>> " + localDateTimeTo);
-//        System.out.println("-----------------------------------------------------------------");
-
-        return submissionPage;
+        return submissionPage.map(submissionMapper::toSubmissionAdminResponse);
     }
 
-    public List<SubmissionAdminResponse> convertFilterSubmission (Page<Submission> submissionPage) {
-        List<SubmissionAdminResponse> responseList = new ArrayList<>();
-        for (Submission submission : submissionPage.getContent()) {
-            SubmissionAdminResponse res = submissionMapper.toSubmissionAdminResponse(submission);
+    public void deletedSubmission (String submissionId){
+        Submission submission = submissionRepository.findById(submissionId).orElseThrow(() -> new AppException(SubmissionErrorCode.SUBMISSION_NOT_FOUND));
+        submission.setStatus("deleted");
+        submissionRepository.save(submission);
+    }
 
-            responseList.add(submissionMapper.toSubmissionAdminResponse(submission));
+    public void updateSubmission (String submissionId, GradedSubmissionRequest request) {
+        Submission submission = submissionRepository.findById(submissionId).orElseThrow(() -> new AppException(SubmissionErrorCode.SUBMISSION_NOT_FOUND));
+
+        submissionMapper.toSubmission(submission,  request);
+        submission.setStatus("graded");
+
+            submission.setReviewedAt(LocalDateTime.now());
+
+        if (submission.getAccountGrader() == null) {
+            submission.setAccountGrader(authenticationService.getMyAccountCurrent());
         }
-        return responseList;
+        submissionRepository.save(submission);
     }
+
 
 
 
