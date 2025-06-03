@@ -21,35 +21,23 @@ import java.util.List;
 public class CourseController {
     final CourseService courseService; // hoặc private final
 
+    @GetMapping("/filter")
+    public ApiResponse<List<CourseCardResponse>> filterCourses (@RequestParam(required = false) String sort ,
+                                                                @RequestParam(required = false) String category,
+                                                                @RequestParam (required = false) String keyword,
+                                                                @RequestParam    int page ,
+                                                                @RequestParam  int size
+                                                                )
+    {
 
-    @GetMapping("/hot")
-    public ApiResponse<List<CourseCardResponse>> hotCourses(
-            @RequestParam int page,
-            @RequestParam int size
-    ) {
-        return ApiResponse.<List<CourseCardResponse>>builder().result(courseService.getHotCourse(page, size)).build();
-    }
-
-    @GetMapping("/newest")
-    public ApiResponse<List<CourseCardResponse>> newestCourse
-            (
-                    @RequestParam int page,
-                    @RequestParam int size) {
-        return ApiResponse.<List<CourseCardResponse>>builder().result(courseService.getNewestCourse(page,size)).build();
-    }
-
-    @GetMapping("/search")
-    public ApiResponse<List<CourseCardResponse>> searchCourses(
-            @RequestParam String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        Pageable pageable = PageRequest.of(page, size);
-        Page<CourseCardResponse> results = courseService.searchCoursesByName(keyword, pageable);
+        Page<CourseCardResponse> course = courseService.filterCourse(sort, category, keyword, page , size);
 
         return ApiResponse.<List<CourseCardResponse>>builder()
-                .result(results.stream().toList())
+                .totalPages(course.getTotalPages())
+                .result(course.stream().toList())
                 .build();
     }
+
+
 
 }

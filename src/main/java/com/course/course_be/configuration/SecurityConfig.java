@@ -28,7 +28,7 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_ENDPOINTS = {"/auth/refresh", "/auth/google",  "/auth/introspect-refresh-token", "/auth/introspect-access-token", "/auth/login" };
     private final String[] PUBLIC_GET_ENDPOINTS = {
-            "/course/search", "/course/hot" , "/course/newest" , "/category/search/**" , "/category"
+            "/course/filter" , "/category"
     };
     @Value("${jwt.accessTokenSecret}")
     private String ACCESS_TOKEN_SECRET;
