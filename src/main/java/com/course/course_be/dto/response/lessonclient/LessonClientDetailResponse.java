@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@JsonInclude(JsonInclude.Include.NON_NULL)
+
 public class LessonClientDetailResponse {
 
     String id;
@@ -34,4 +34,5 @@ public class LessonClientDetailResponse {
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
     String status;
+    String submissionUrl;
 }

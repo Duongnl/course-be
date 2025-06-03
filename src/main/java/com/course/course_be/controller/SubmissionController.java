@@ -1,14 +1,52 @@
 package com.course.course_be.controller;
 
+import com.course.course_be.dto.request.submissionclient.SubmissionClientRequest;
+import com.course.course_be.dto.response.ApiResponse;
+import com.course.course_be.dto.response.submissionadmin.SubmissionAdminResponse;
+import com.course.course_be.entity.Submission;
+import com.course.course_be.service.SubmissionService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/submission")
 @RequiredArgsConstructor // autowire
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SubmissionController {
+    SubmissionService submissionService;
+
+    @PostMapping("")
+    public ApiResponse<?> submission (@RequestBody @Valid SubmissionClientRequest request)
+    {
+        submissionService.submission(request);
+        return ApiResponse.builder()
+                .build();
+    }
+
+    @GetMapping("")
+    public ApiResponse<List<SubmissionAdminResponse>> filterSubmission (@RequestParam(required = false) Integer page,
+                                                                        @RequestParam(required = false) Integer perPage,
+                                                                        @RequestParam(required = false) String courseName,
+                                                                        @RequestParam(required = false) String lessonName,
+                                                                        @RequestParam(required = false) String submitterName,
+                                                                        @RequestParam(required = false) String submitterEmail,
+                                                                        @RequestParam(required = false) String status,
+                                                                        @RequestParam(required = false) String from,
+                                                                        @RequestParam(required = false) String to
+
+
+    ) {
+        Page<Submission> submissionAdminResponsePage = submissionService.filterSubmission(page, perPage, courseName, lessonName, submitterName, submitterEmail, status, from, to);
+        return ApiResponse.<List<SubmissionAdminResponse>>builder()
+                .result(submissionService.convertFilterSubmission(submissionAdminResponsePage))
+                .totalPages(submissionAdminResponsePage.getTotalPages())
+                .build();
+    }
+
 }

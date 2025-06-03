@@ -4,10 +4,7 @@ import com.course.course_be.dto.response.lessonclient.ChapterSidebarResponse;
 import com.course.course_be.dto.response.lessonclient.CourseInfoResponse;
 import com.course.course_be.dto.response.lessonclient.LessonClientDetailResponse;
 import com.course.course_be.dto.response.lessonclient.LessonSidebarResponse;
-import com.course.course_be.entity.Account;
-import com.course.course_be.entity.Chapter;
-import com.course.course_be.entity.Course;
-import com.course.course_be.entity.Lesson;
+import com.course.course_be.entity.*;
 import com.course.course_be.exception.AppException;
 import com.course.course_be.exception.ChapterErrorCode;
 import com.course.course_be.exception.CourseErrorCode;
@@ -15,10 +12,7 @@ import com.course.course_be.exception.LessonErrorCode;
 import com.course.course_be.mapper.ChapterMapper;
 import com.course.course_be.mapper.CourseMapper;
 import com.course.course_be.mapper.LessonMapper;
-import com.course.course_be.repository.ChapterRepository;
-import com.course.course_be.repository.CourseRepository;
-import com.course.course_be.repository.LessonProgressRepository;
-import com.course.course_be.repository.LessonRepository;
+import com.course.course_be.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -41,6 +35,7 @@ public class LessonService {
     LessonMapper lessonMapper;
     LessonProgressRepository lessonProgressRepository;
     LessonRepository lessonRepository;
+    SubmissionRepository submissionRepository;
     public CourseInfoResponse getCourseInfo(String lessonId) {
         var context = SecurityContextHolder.getContext();
         String Id = context.getAuthentication().getName();
@@ -99,8 +94,15 @@ public class LessonService {
         String accountId = context.getAuthentication().getName();
         Lesson lesson = lessonRepository.findAuthorizedLessonById(lessonId,accountId)
                 .orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
+        LessonClientDetailResponse lessonClientDetailResponse =   lessonMapper.toLessonClientDetailResponse(lesson);
+        Submission submission = submissionRepository.findByLessonIdAndAccountSubmitterId(lesson.getId(), accountId);
 
-        return lessonMapper.toLessonClientDetailResponse(lesson);
+        if (submission != null) {
+        lessonClientDetailResponse.setSubmissionUrl(submission.getSubmissionUrl());
+        } else {
+            lessonClientDetailResponse.setSubmissionUrl(null);
+        }
+        return lessonClientDetailResponse;
     }
 }
 

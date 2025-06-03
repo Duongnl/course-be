@@ -3,15 +3,20 @@ package com.course.course_be.service;
 import com.course.course_be.dto.request.category.CreateCategoryRequest;
 import com.course.course_be.dto.request.category.UpdateCategoryRequest;
 import com.course.course_be.dto.response.category.CategoryResponse;
+import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.entity.Category;
+import com.course.course_be.entity.Course;
 import com.course.course_be.exception.AppException;
 import com.course.course_be.exception.CategoryErrorCode;
 import com.course.course_be.mapper.CategoryMapper;
+import com.course.course_be.mapper.CourseMapper;
 import com.course.course_be.repository.CategoryRepository;
+import com.course.course_be.repository.CourseRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +29,8 @@ import java.util.*;
 public class CategoryService {
     CategoryRepository categoryRepository;
     CategoryMapper categoryMapper;
+    CourseRepository courseRepository;
+    CourseMapper courseMapper;
 
     public Page<CategoryResponse> getAll(String name, String detail, String status, Pageable pageable) {
         name = name == null ? "" : name;
