@@ -33,20 +33,14 @@ public class CategoryController {
                                                               @RequestParam(required = false) String name,
                                                               @RequestParam(required = false) String detail,
                                                               @RequestParam(required = false) String status) {
-        if (page != null) {
-            int pageIndex = (page > 0) ? page - 1 : 0;
-            int pageSize = (perPage!= null && perPage > 0) ? perPage : 10;
-            Pageable pageable = PageableUtil.createPageable(pageIndex, pageSize, sort); // page - 1 vì Pageable index bắt đầu 0
-            Page<CategoryResponse> pageResult = categoryService.getAllPaging(name, detail, status, pageable);
-            return ApiResponse.<List<CategoryResponse>>builder().
-                    result(pageResult.stream().toList())
-                    .currentPage(page)
-                    .totalPages(pageResult.getTotalPages())
-                    .totalItems(pageResult.getTotalElements()).build();
-        }
-        return ApiResponse.<List<CategoryResponse>>builder().result(
-                categoryService.getAll(name, detail, status, sort)
-        ).build();
+
+        Pageable pageable = PageableUtil.createPageable(page, perPage, sort);
+        Page<CategoryResponse> pageResult = categoryService.getAll(name, detail, status, pageable);
+        return ApiResponse.<List<CategoryResponse>>builder().
+                result(pageResult.stream().toList())
+                .currentPage(page != null ? page : 1)
+                .totalPages(pageResult.getTotalPages())
+                .totalItems(pageResult.getTotalElements()).build();
     }
 
     @GetMapping ("/search/{id}")

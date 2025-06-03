@@ -18,7 +18,6 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -33,61 +32,16 @@ public class CategoryService {
     CourseRepository courseRepository;
     CourseMapper courseMapper;
 
-    public List<CategoryResponse> getAll(String name, String detail, String status, String sort) {
-        name = name == null ? "" : name;
-        Sort s = Sort.by(Sort.Direction.DESC, "createdAt");
-        if (sort != null && !sort.isEmpty()) {
-            String[] sortParams = sort.split("\\.");
-            Sort.Direction direction = Sort.Direction.ASC;
-            if (sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")) {
-                direction = Sort.Direction.DESC;
-            }
-            s = Sort.by(direction, sortParams[0]);
-        }
-
-        List<Category> list;
-        if (status == null || status.isEmpty()) {
-            list = detail != null ?
-                    categoryRepository.findByNameContainingAndDetailContainingAndStatusNot(name, detail, "deleted", s)
-                    : categoryRepository.findByNameContainingAndStatusNot(name, "deleted", s);
-        } else {
-            List<String> statusList = Arrays.asList(status.split("\\."));
-            list = detail != null ? categoryRepository.findByNameContainingAndDetailContainingAndStatusIn(name, detail, statusList, s)
-                    : categoryRepository.findByNameContainingAndStatusIn(name, statusList, s);
-        }
-
-        return categoryMapper.toCategoryResponseList(list);
-    }
-
-    public List<CourseCardResponse> getCourseByCategory(String id, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        // Tìm category
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new AppException(CategoryErrorCode.CATEGORY_NOT_FOUND));
-
-        List<CourseCardResponse> results = new ArrayList<CourseCardResponse>();
-        // Lấy danh sách khóa học theo category, chỉ lấy ACTIVE
-        List<Course> coursePage = courseRepository.findByCategoryAndStatus(category, "active", pageable);
-        // Convert sang response DTO
-        for (Course course: coursePage)
-        {
-            results.add(courseMapper.toCourseSearchingResponse(course));
-        }
-
-        return  results;
-
-    }
-
-    public Page<CategoryResponse> getAllPaging(String name, String detail, String status, Pageable pageable) {
+    public Page<CategoryResponse> getAll(String name, String detail, String status, Pageable pageable) {
         name = name == null ? "" : name;
         Page<Category> page;
         if (status == null || status.isEmpty()) {
-            page = detail != null ? categoryRepository.findByNameContainingAndDetailContainingAndStatusNot(name, detail, "deleted", pageable)
-                    : categoryRepository.findByNameContainingAndStatusNot(name, "deleted", pageable);
+            page = (detail != null && !detail.isEmpty()) ? categoryRepository.findByNameContainingAndDetailContainingAndStatusNot(name, detail, "deleted", pageable)
+                    : categoryRepository.findByNameContainingAndStatusNot(name,"deleted",pageable);
         } else {
             List<String> statusList = Arrays.asList(status.split("\\."));
-            page = detail != null ? categoryRepository.findByNameContainingAndDetailContainingAndStatusIn(name, detail, statusList, pageable)
-                    : categoryRepository.findByNameContainingAndStatusIn(name, statusList, pageable);
+            page = (detail != null && !detail.isEmpty()) ? categoryRepository.findByNameContainingAndDetailContainingAndStatusIn(name, detail, statusList, pageable)
+                    : categoryRepository.findByNameContainingAndStatusIn(name,statusList,pageable);
         }
         return page.map(categoryMapper::toCategoryResponse);
     }
