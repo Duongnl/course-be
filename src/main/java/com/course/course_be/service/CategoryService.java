@@ -71,7 +71,7 @@ public class CategoryService {
         // Convert sang response DTO
         for (Course course: coursePage)
         {
-            results.add(courseMapper.toCourseSearchingResponse(course));
+            results.add(courseMapper.toCourseCardResponse(course));
         }
 
         return  results;
