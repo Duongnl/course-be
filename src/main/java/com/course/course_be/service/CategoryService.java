@@ -73,4 +73,23 @@ public class CategoryService {
         category.setStatus("deleted");
         categoryRepository.save(category);
     }
+
+    public List<CourseCardResponse> getCourseByCategory(String id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        // Tìm category
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new AppException(CategoryErrorCode.CATEGORY_NOT_FOUND));
+
+        List<CourseCardResponse> results = new ArrayList<CourseCardResponse>();
+        // Lấy danh sách khóa học theo category, chỉ lấy ACTIVE
+        List<Course> coursePage = courseRepository.findByCategoryAndStatus(category, "active", pageable);
+        // Convert sang response DTO
+        for (Course course: coursePage)
+        {
+            results.add(courseMapper.toCourseSearchingResponse(course));
+        }
+
+        return  results;
+
+    }
 }
