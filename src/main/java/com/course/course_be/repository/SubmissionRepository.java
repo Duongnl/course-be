@@ -28,6 +28,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, String> 
       )
       AND s.accountSubmitter.profile.name LIKE %:submitterName%
       AND s.status LIKE %:status%
+      AND s.status <> 'deleted'
       AND (
           (:from IS NULL AND :to IS NULL) OR (s.submittedAt BETWEEN :from AND :to)
       )

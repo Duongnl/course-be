@@ -1,5 +1,6 @@
 package com.course.course_be.controller;
 
+import com.course.course_be.dto.request.submissionadmin.GradedSubmissionRequest;
 import com.course.course_be.dto.request.submissionclient.SubmissionClientRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.submissionadmin.SubmissionAdminResponse;
@@ -42,11 +43,27 @@ public class SubmissionController {
 
 
     ) {
-        Page<Submission> submissionAdminResponsePage = submissionService.filterSubmission(page, perPage, courseName, lessonName, submitterName, submitterEmail, status, from, to);
+        Page<SubmissionAdminResponse> submissionAdminResponsePage = submissionService.filterSubmission(page, perPage, courseName, lessonName, submitterName, submitterEmail, status, from, to);
         return ApiResponse.<List<SubmissionAdminResponse>>builder()
-                .result(submissionService.convertFilterSubmission(submissionAdminResponsePage))
+                .result(submissionAdminResponsePage.stream().toList())
                 .totalPages(submissionAdminResponsePage.getTotalPages())
                 .build();
     }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<?> deletedSubmission (@PathVariable String id) {
+        submissionService.deletedSubmission(id);
+        return ApiResponse.builder()
+                .build();
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<?> updateSubmission (@PathVariable String id, @RequestBody @Valid GradedSubmissionRequest request) {
+        submissionService.updateSubmission(id,request );
+        return ApiResponse.builder()
+                .build();
+    }
+
+
 
 }
