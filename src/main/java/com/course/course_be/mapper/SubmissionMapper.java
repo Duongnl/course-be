@@ -2,6 +2,7 @@ package com.course.course_be.mapper;
 
 import com.course.course_be.dto.request.submissionadmin.GradedSubmissionRequest;
 import com.course.course_be.dto.response.submissionadmin.SubmissionAdminResponse;
+import com.course.course_be.dto.response.submissionclient.SubmissionClientResponse;
 import com.course.course_be.entity.Submission;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,4 +20,10 @@ public interface SubmissionMapper {
     SubmissionAdminResponse toSubmissionAdminResponse(Submission submission);
 
     void toSubmission(@MappingTarget Submission submission, GradedSubmissionRequest gradedSubmissionRequest);
+
+
+    @Mapping(source = "lesson.chapter.course.name", target="courseName")
+    @Mapping(source = "lesson.name", target="lessonName")
+    SubmissionClientResponse toSubmissionClientResponse(Submission submission);
+
 }
