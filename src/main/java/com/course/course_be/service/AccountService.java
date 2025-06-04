@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -67,6 +68,37 @@ public class AccountService {
         return rs;
     }
 
+    public Page<AccountResponse> filterAccounts(
+            Integer page,
+            Integer perPage,
+            String name,
+            String email,
+            String sex,
+            String role,
+            String status
+    ) {
+        // Handle pagination
+        page = (page == null || page < 1) ? 1 : page; // Ensure page is at least 1
+        page = page - 1; // Convert 1-based to 0-based
+        perPage = (perPage == null || perPage < 1) ? 10 : perPage; // Ensure perPage is at least 1
+        Pageable pageable = PageRequest.of(page, perPage);
+
+        // Handle filter parameters
+        name = name == null ? "" : name;
+        email = email == null ? "" : email;
+        sex = sex == null ? "" : sex;
+        role = role == null ? "" : role;
+        status = status == null ? "" : status;
+
+        // Fetch accounts from repository
+        Page<Account> accountPage = accountRepository.filterAccounts(
+                name, email, sex, role, status, pageable
+        );
+
+        // Map to DTO
+        return accountPage.map(accountMapper::toAccountResponse);
+    }
+
     public AccountResponse createNew(CreateAccountRequest request) {
         // Kiểm tra email và username trùng lặp
         validateEmailAndUsername(request.getEmail(), request.getUsername(), null);
@@ -106,9 +138,37 @@ public class AccountService {
     }
 
     @Transactional(readOnly = true)
-    public List<AccountResponse> findAll() {
-        List<Account> accounts = accountRepository.findByStatusNot("deleted");
-        return accountMapper.toAccountResponseList(accounts);
+    public ResultPaginationDTO findAll(Specification<Account> spec, Pageable pageable) {
+        // Thêm điều kiện lọc status khác "deleted"
+        Specification<Account> statusSpec = (root, query, criteriaBuilder) ->
+                criteriaBuilder.notEqual(root.get("status"), "deleted");
+
+        // Kết hợp với specification từ @Filter
+        Specification<Account> combinedSpec = spec != null ?
+                Specification.where(statusSpec).and(spec) : statusSpec;
+
+        // Lấy danh sách phân trang với specification
+        Page<Account> pageAccount = accountRepository.findAll(combinedSpec, pageable);
+
+        // Tạo ResultPaginationDTO
+        ResultPaginationDTO rs = new ResultPaginationDTO();
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+
+        // Thiết lập meta
+        meta.setPage(pageable.getPageNumber() + 1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(pageAccount.getTotalPages());
+        meta.setTotal(pageAccount.getTotalElements());
+        rs.setMeta(meta);
+
+        // Chuyển đổi sang DTO
+        List<AccountResponse> listAccount = pageAccount.getContent()
+                .stream()
+                .map(accountMapper::toAccountResponse)
+                .toList();
+
+        rs.setResult(listAccount);
+        return rs;
     }
 
     public AccountResponse update(String id, UpdateAccountRequest request) {

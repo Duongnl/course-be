@@ -13,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import com.turkraft.springfilter.boot.Filter;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.*;
@@ -55,10 +56,22 @@ public class AccountController {
               .build();
    }
 
-   @GetMapping
-   public ApiResponse<List<AccountResponse>> getAllAccounts() {
+   @GetMapping("")
+   public ApiResponse<List<AccountResponse>> filterAccounts(
+           @RequestParam(required = false) Integer page,
+           @RequestParam(required = false) Integer perPage,
+           @RequestParam(required = false) String name,
+           @RequestParam(required = false) String email,
+           @RequestParam(required = false) String sex,
+           @RequestParam(required = false) String role,
+           @RequestParam(required = false) String status
+   ) {
+      Page<AccountResponse> accountPage = accountService.filterAccounts(
+              page, perPage, name, email, sex, role, status
+      );
       return ApiResponse.<List<AccountResponse>>builder()
-              .result(accountService.findAll())
+              .result(accountPage.stream().toList())
+              .totalPages(accountPage.getTotalPages())
               .build();
    }
 

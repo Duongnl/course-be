@@ -20,8 +20,7 @@ public class CreateAccountRequest {
     @NotBlank(message = "Username is required")
     private String username;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
+
     private String email;
 
     @NotBlank(message = "Password is required")
@@ -39,14 +38,13 @@ public class CreateAccountRequest {
     @Pattern(regexp = "MALE|FEMALE|OTHER", message = "Sex must be MALE, FEMALE, or OTHER")
     private String sex;
 
-    @NotBlank(message = "Phone is required")
+
     private String phone;
 
-    @NotBlank(message = "Avatar URL is required")
+
     private String avatarUrl;
 
-    @NotBlank(message = "Birthday is required")
-    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Birthday must be in YYYY-MM-DD format")
+
     private String birthday;
 }
 
