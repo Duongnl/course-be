@@ -13,7 +13,7 @@ public interface SubmissionMapper {
 
     @Mapping(source = "lesson.chapter.course.name", target="courseName")
     @Mapping(source = "lesson.name", target="lessonName")
-    @Mapping(source = "accountSubmitter.email", target="submitterEmail")
+    @Mapping(source = "accountSubmitter.username", target="submitterUsername")
     @Mapping(source = "accountSubmitter.profile.name", target="submitterName")
     @Mapping(source = "accountGrader.email", target="graderEmail")
     @Mapping(source = "accountGrader.profile.name", target="graderName")

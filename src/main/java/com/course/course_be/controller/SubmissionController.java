@@ -36,14 +36,14 @@ public class SubmissionController {
                                                                        @RequestParam(required = false) String courseName,
                                                                        @RequestParam(required = false) String lessonName,
                                                                        @RequestParam(required = false) String submitterName,
-                                                                       @RequestParam(required = false) String submitterEmail,
+                                                                       @RequestParam(required = false) String submitterUsername,
                                                                        @RequestParam(required = false) String status,
                                                                        @RequestParam(required = false) String from,
                                                                        @RequestParam(required = false) String to
 
 
     ) {
-        Page<SubmissionAdminResponse> submissionAdminResponsePage = submissionService.filterSubmissionAdmin(page, perPage, courseName, lessonName, submitterName, submitterEmail, status, from, to);
+        Page<SubmissionAdminResponse> submissionAdminResponsePage = submissionService.filterSubmissionAdmin(page, perPage, courseName, lessonName, submitterName, submitterUsername, status, from, to);
         return ApiResponse.<List<SubmissionAdminResponse>>builder()
                 .result(submissionAdminResponsePage.stream().toList())
                 .totalPages(submissionAdminResponsePage.getTotalPages())

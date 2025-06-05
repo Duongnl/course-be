@@ -161,6 +161,11 @@ public class AuthenticationService {
         if ( account == null) {
             throw new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND);
         }
+
+        if ( account.getPassword() == null ||  account.getGoogleId() !=null) {
+            throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+        }
+
         if (account.getPassword().equals(request.getPassword().trim())) {
             var refreshToken = generateRefreshToken(account);
             var accessToken = generateAccessToken(account);
@@ -193,6 +198,7 @@ public class AuthenticationService {
 
         Account account = new Account();
         account.setGoogleId(googleId);
+        account.setUsername(email);
         account.setEmail(email);
         account.setRole("CLIENT");
         account.setStatus("active");
