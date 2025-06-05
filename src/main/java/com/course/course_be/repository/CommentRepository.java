@@ -13,4 +13,8 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
      Page<Comment> findByAccount_Profile_NameContainingIgnoreCaseAndContentContainingIgnoreCaseAndLesson_NameContainingIgnoreCaseAndStatusNot(
             String accountName, String content, String lessonName, String status, Pageable pageable);
 
+     Page<Comment> findByCourse_IdAndParentCommentIsNullAndStatusNot(String course_id, String status, Pageable pageable);
+     Page<Comment> findByLesson_IdAndParentCommentIsNullAndStatusNot(String lesson_id, String status, Pageable pageable);
+     Page<Comment> findByParentComment_IdAndStatusNot(Integer parentComment_id, String status, Pageable pageable);
+
 }
