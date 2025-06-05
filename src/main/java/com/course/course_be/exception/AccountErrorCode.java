@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 public enum AccountErrorCode  implements ErrorCode{
     ACCOUNT_NOT_FOUND  ("ACCOUNT_1","Account not found", HttpStatus.UNAUTHORIZED),
     SAVE_USER_FAIL("ACCOUNT_2","Save user is fail", HttpStatus.BAD_REQUEST),
+    EMAIL_ALREADY_EXISTS("ACCOUNT_3", "Email already exists", HttpStatus.BAD_REQUEST),
+    USERNAME_ALREADY_EXISTS("ACCOUNT_4", "Username already exists", HttpStatus.BAD_REQUEST),
     ;
 
     AccountErrorCode(String code, String message, HttpStatus httpStatus) {

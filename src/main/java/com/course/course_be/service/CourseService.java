@@ -27,8 +27,36 @@ public class CourseService {
 
     public Page<CourseCardResponse> searchCoursesByName(String keyword, Pageable pageable) {
         Page<Course> coursesPage = courseRepository.findByNameContainingIgnoreCase(keyword, pageable);
-        return coursesPage.map(courseMapper::toCourseSearchingResponse);
+        return coursesPage.map(courseMapper::toCourseCardResponse);
     }
+
+    public Page<CourseCardResponse> filterCourse (String sort , String category, String keyword , int page , int size)
+    {
+
+        Page<Course> PageCourse = null ;
+        Pageable pageable = PageRequest.of(page, size);
+        if (keyword == null  )
+        {
+            keyword = "" ;
+
+        }
+        if( sort != null &&sort.equals("hot"))
+        {
+            PageCourse = courseRepository.searchByKeywordAndCategoryOrderByHot(keyword , category , pageable);
+        }
+        else if ( sort != null && sort.equals("newest"))
+        {
+            PageCourse = courseRepository.searchByKeywordAndCategoryOrderByNewest(keyword, category , pageable);
+        }
+        else
+        {
+            PageCourse = courseRepository.searchByKeywordAndCategory(keyword, category , pageable);
+        }
+
+
+        return PageCourse.map(courseMapper::toCourseCardResponse);
+    }
+
 
     public List<CourseCardResponse> getHotCourse (int page , int size)
     {
@@ -38,7 +66,7 @@ public class CourseService {
         ListCourse = courseRepository.getHotCourse(pageable);
         for (Course course : ListCourse )
         {
-            coursesHot.add(courseMapper.toCourseSearchingResponse(course));
+            coursesHot.add(courseMapper.toCourseCardResponse(course));
         }
         return coursesHot;
     }
@@ -50,7 +78,7 @@ public class CourseService {
         ListCourse = courseRepository.getNewestCourse(pageable);
         for (Course course : ListCourse)
         {
-            coursesNewest.add(courseMapper.toCourseSearchingResponse(course));
+            coursesNewest.add(courseMapper.toCourseCardResponse(course));
         }
         return coursesNewest;
 

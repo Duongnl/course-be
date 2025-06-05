@@ -18,6 +18,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -31,6 +32,27 @@ public class CategoryService {
     CategoryMapper categoryMapper;
     CourseRepository courseRepository;
     CourseMapper courseMapper;
+
+
+    public List<CourseCardResponse> getCourseByCategory(String id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        // Tìm category
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new AppException(CategoryErrorCode.CATEGORY_NOT_FOUND));
+
+        List<CourseCardResponse> results = new ArrayList<CourseCardResponse>();
+        // Lấy danh sách khóa học theo category, chỉ lấy ACTIVE
+        List<Course> coursePage = courseRepository.findByCategoryAndStatus(category, "active", pageable);
+        // Convert sang response DTO
+        for (Course course: coursePage)
+        {
+            results.add(courseMapper.toCourseCardResponse(course));
+        }
+
+        return  results;
+
+    }
+
 
     public Page<CategoryResponse> getAll(String name, String detail, String status, Pageable pageable) {
         name = name == null ? "" : name;
@@ -73,4 +95,5 @@ public class CategoryService {
         category.setStatus("deleted");
         categoryRepository.save(category);
     }
+
 }
