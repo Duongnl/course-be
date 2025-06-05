@@ -161,6 +161,11 @@ public class AuthenticationService {
         if ( account == null) {
             throw new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND);
         }
+
+        if ( account.getPassword() == null ||  account.getGoogleId() !=null) {
+            throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+        }
+
         if (account.getPassword().equals(request.getPassword().trim())) {
             var refreshToken = generateRefreshToken(account);
             var accessToken = generateAccessToken(account);
@@ -193,6 +198,7 @@ public class AuthenticationService {
 
         Account account = new Account();
         account.setGoogleId(googleId);
+        account.setUsername(email);
         account.setEmail(email);
         account.setRole("CLIENT");
         account.setStatus("active");
@@ -217,9 +223,9 @@ public class AuthenticationService {
     public AuthenticationResponse refreshToken (RefreshTokenRequest refreshTokenRequest)  {
         try {
             if (introspectRefreshToken(refreshTokenRequest)){
-                String googleId = getIdFromToken(refreshTokenRequest.getRefreshToken());
+                String id = getIdFromToken(refreshTokenRequest.getRefreshToken());
 
-                Account account = accountRepository.findById(googleId).orElseThrow(
+                Account account = accountRepository.findById(id).orElseThrow(
                         () -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND)
                 );
 
@@ -230,6 +236,7 @@ public class AuthenticationService {
                 String accessToken = generateAccessToken(account);
                 return  AuthenticationResponse.builder()
                         .accessToken(accessToken)
+                        .role(account.getRole())
                         .authenticated(true)
                         .build();
 
@@ -267,10 +274,6 @@ public class AuthenticationService {
           {
         var token = refreshTokenRequest.getRefreshToken();
 
-//        neu khong co trong db thi da dang xuat
-        if (!refreshTokenRepository.existsByRefreshToken(token)) {
-            throw new AppException(AuthErrorCode.UNAUTHENTICATED);
-        }
 
         try {
 
@@ -288,10 +291,11 @@ public class AuthenticationService {
             if (!verified) {
 
                 throw new AppException(AuthErrorCode.UNAUTHENTICATED);
-            } else if ( !expityTime.after(new Date()))  {
-
+            } else if (!refreshTokenRepository.existsByRefreshToken(token)) {
+                throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+            }
+            else if ( !expityTime.after(new Date()))  {
                 refreshTokenService.deleteRefreshToken(refreshTokenRequest);
-
                 throw new AppException(AuthErrorCode.UNAUTHENTICATED);
             }
             else {
@@ -304,7 +308,7 @@ public class AuthenticationService {
     }
 
     // kiem tra xem refresh token co hop le khong
-    public boolean introspectAccessToken(AccessTokenRequest accessTokenRequest)
+    public AuthenticationResponse introspectAccessToken(AccessTokenRequest accessTokenRequest)
     {
         var token = accessTokenRequest.getAccessToken();
 
@@ -327,7 +331,11 @@ public class AuthenticationService {
                 throw new AppException(AuthErrorCode.UNAUTHENTICATED);
             }
             else {
-                return  true;
+                Account account = getMyAccountCurrent();
+                return  AuthenticationResponse.builder()
+                        .role(account.getRole())
+                        .authenticated(true)
+                        .build();
             }
         } catch (Exception e) {
             System.out.println("error >>> " + e.getMessage());

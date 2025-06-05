@@ -21,11 +21,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, String> 
     SELECT s FROM Submission s
     WHERE s.lesson.chapter.course.name LIKE %:courseName%
       AND s.lesson.name LIKE %:lessonName%
-      AND (
-          (:submitterEmail = '') AND (s.accountSubmitter.email IS NULL OR s.accountSubmitter.email LIKE '%')
-          OR
-          (:submitterEmail <> '') AND (s.accountSubmitter.email LIKE %:submitterEmail%)
-      )
+      AND s.accountSubmitter.username LIKE %:submitterUsername%
       AND s.accountSubmitter.profile.name LIKE %:submitterName%
       AND s.status LIKE %:status%
       AND s.status <> 'deleted'
@@ -34,15 +30,88 @@ public interface SubmissionRepository extends JpaRepository<Submission, String> 
       )
       ORDER BY s.submittedAt DESC
 """)
-    Page<Submission> filterSubmissions(
+    Page<Submission> filterSubmissionsAdminWithDateSort(
             @Param("courseName") String courseName,
             @Param("lessonName") String lessonName,
-            @Param("submitterEmail") String submitterEmail,
+            @Param("submitterUsername") String submitterUsername,
             @Param("submitterName") String submitterName,
             @Param("status") String status,
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to,
             Pageable pageable
     );
+
+
+    @Query("""
+    SELECT s FROM Submission s
+    WHERE s.lesson.chapter.course.name LIKE %:courseName%
+      AND s.lesson.name LIKE %:lessonName%
+      AND s.accountSubmitter.username LIKE %:submitterUsername%
+      AND s.accountSubmitter.profile.name LIKE %:submitterName%
+      AND s.status LIKE %:status%
+      AND s.status <> 'deleted'
+      AND (
+          (:from IS NULL AND :to IS NULL) OR (s.submittedAt BETWEEN :from AND :to)
+      )
+""")
+    Page<Submission> filterSubmissionsAdminWithoutOrder(
+            @Param("courseName") String courseName,
+            @Param("lessonName") String lessonName,
+            @Param("submitterUsername") String submitterUsername,
+            @Param("submitterName") String submitterName,
+            @Param("status") String status,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to,
+            Pageable pageable
+    );
+
+
+    @Query("""
+    SELECT s FROM Submission s
+    WHERE s.lesson.chapter.course.name LIKE %:courseName%
+      AND s.lesson.name LIKE %:lessonName%
+      AND s.accountSubmitter.id = :accountId
+      AND s.status LIKE %:status%
+      AND s.status <> 'deleted'
+      AND (
+          (:from IS NULL AND :to IS NULL) OR (s.submittedAt BETWEEN :from AND :to)
+      )
+      ORDER BY s.submittedAt DESC
+""")
+    Page<Submission> filterSubmissionsClientWithDateSort(
+            @Param("courseName") String courseName,
+            @Param("lessonName") String lessonName,
+            @Param("accountId") String accountId,
+            @Param("status") String status,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to,
+            Pageable pageable
+    );
+
+
+    @Query("""
+    SELECT s FROM Submission s
+    WHERE s.lesson.chapter.course.name LIKE %:courseName%
+      AND s.lesson.name LIKE %:lessonName%
+      AND s.accountSubmitter.id = :accountId
+      AND s.status LIKE %:status%
+      AND s.status <> 'deleted'
+      AND (
+          (:from IS NULL AND :to IS NULL) OR (s.submittedAt BETWEEN :from AND :to)
+      )
+""")
+    Page<Submission> filterSubmissionsClientWithoutOrder(
+            @Param("courseName") String courseName,
+            @Param("lessonName") String lessonName,
+            @Param("accountId") String accountId,
+            @Param("status") String status,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to,
+            Pageable pageable
+    );
+
+
+
+
 
 }

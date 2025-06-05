@@ -3,11 +3,10 @@ package com.course.course_be.controller;
 import com.course.course_be.dto.request.account.CreateAccountRequest;
 import com.course.course_be.dto.request.account.UpdateAccountRequest;
 import com.course.course_be.dto.response.ApiResponse;
-import com.course.course_be.dto.response.account.AccountResponse;
-import com.course.course_be.dto.response.account.CurrentAccountResponse;
-import com.course.course_be.dto.response.account.ResultPaginationDTO;
+import com.course.course_be.dto.response.account.*;
 import com.course.course_be.entity.Account;
 import com.course.course_be.service.AccountService;
+import com.course.course_be.service.CourseEnrollmentService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +19,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/account")
 @RequiredArgsConstructor // autowire
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AccountController {
    AccountService accountService;
+   CourseEnrollmentService courseEnrollmentService;
 
    @GetMapping("/current-account")
    public ApiResponse<CurrentAccountResponse> getCurrentAccount() {
@@ -90,6 +91,38 @@ public class AccountController {
               .message("Account deleted successfully")
               .build();
    }
+
+   @GetMapping("/course-progress/{id}")
+   public ApiResponse<List<CourseProgressResponse>> getCourseProgress(@PathVariable String id,
+                                                                      @RequestParam(required = false) Integer page,
+                                                                      @RequestParam(required = false) Integer perPage,
+                                                                      @RequestParam(required = false) String name,
+                                                                      @RequestParam(required = false) String status
+
+   ) {
+
+      Page<CourseProgressResponse> courseProgressPage =   courseEnrollmentService.getCourseProgress(id,page, perPage, name, status);
+      return ApiResponse.<List<CourseProgressResponse>>builder()
+              .result(courseProgressPage.stream().toList())
+              .totalPages(courseProgressPage.getTotalPages())
+              .build();
+   }
+
+   @GetMapping("/my-course")
+   public ApiResponse<List<MyCourseResponse>> getMyCourse(
+                                                                      @RequestParam(required = false) Integer page,
+                                                                      @RequestParam(required = false) String name,
+                                                                      @RequestParam(required = false) String status
+
+   ) {
+
+      Page<MyCourseResponse> courseProgressPage =   courseEnrollmentService.getMyCourse(page, name, status);
+      return ApiResponse.<List<MyCourseResponse>>builder()
+              .result(courseProgressPage.stream().toList())
+              .totalPages(courseProgressPage.getTotalPages())
+              .build();
+   }
+
 
 
 }

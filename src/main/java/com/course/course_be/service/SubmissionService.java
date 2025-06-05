@@ -3,6 +3,7 @@ package com.course.course_be.service;
 import com.course.course_be.dto.request.submissionadmin.GradedSubmissionRequest;
 import com.course.course_be.dto.request.submissionclient.SubmissionClientRequest;
 import com.course.course_be.dto.response.submissionadmin.SubmissionAdminResponse;
+import com.course.course_be.dto.response.submissionclient.SubmissionClientResponse;
 import com.course.course_be.entity.Account;
 import com.course.course_be.entity.Lesson;
 import com.course.course_be.entity.Submission;
@@ -42,20 +43,19 @@ public class SubmissionService {
 
 
     public void submission(SubmissionClientRequest request) {
-        Account account  = authenticationService.getMyAccountCurrent();
+        Account account = authenticationService.getMyAccountCurrent();
 
-        Lesson lesson = lessonRepository.findAuthorizedLessonById(request.getLessonId(),account.getId())
+        Lesson lesson = lessonRepository.findAuthorizedLessonById(request.getLessonId(), account.getId())
                 .orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
 
         if (lesson.getAssignmentUrl() == null) {
-            throw  new AppException(SubmissionErrorCode.SUBMISSION_INVALID);
+            throw new AppException(SubmissionErrorCode.SUBMISSION_INVALID);
         }
 
-        boolean submission = submissionRepository.existsByLessonIdAndAccountSubmitterId(request.getLessonId(),account.getId());
+        boolean submission = submissionRepository.existsByLessonIdAndAccountSubmitterId(request.getLessonId(), account.getId());
         if (submission) {
-            throw  new AppException(SubmissionErrorCode.SUBMISSION_EXIST);
+            throw new AppException(SubmissionErrorCode.SUBMISSION_EXIST);
         }
-
 
 
         Submission submissionNew = new Submission();
@@ -66,33 +66,33 @@ public class SubmissionService {
         submissionNew.setAccountSubmitter(account);
         try {
 
-        submissionRepository.save(submissionNew);
-        }catch (Exception e) {
+            submissionRepository.save(submissionNew);
+        } catch (Exception e) {
             throw new AppException(SubmissionErrorCode.SAVE_SUBMISSION_FAIL);
         }
 
     }
 
-    public Page<SubmissionAdminResponse> filterSubmission ( Integer page,
-                                                            Integer perPage,
-                                                            String courseName,
-                                                            String lessonName,
-                                                            String submitterName,
-                                                            String submitterEmail,
-                                                            String status,
-                                                            String from,
-                                                            String to
+    public Page<SubmissionAdminResponse> filterSubmissionAdmin(Integer page,
+                                                          Integer perPage,
+                                                          String courseName,
+                                                          String lessonName,
+                                                          String submitterName,
+                                                          String submitterUsername,
+                                                          String status,
+                                                          String from,
+                                                          String to
     ) {
 
 
-        page = page ==null ? 1 : page - 1;
-        perPage =  perPage  == null ? 10 : perPage;
+        page = page == null ? 0 : page - 1;
+        perPage = perPage == null ? 10 : perPage;
         Pageable pageable = PageRequest.of(page, perPage);
 
         courseName = courseName == null ? "" : courseName;
         lessonName = lessonName == null ? "" : lessonName;
         submitterName = submitterName == null ? "" : submitterName;
-        submitterEmail = submitterEmail == null ? "" : submitterEmail;
+        submitterUsername = submitterUsername == null ? "" : submitterUsername;
         status = status == null ? "" :
                 (status.equals("submitted.graded") || status.equals("graded.submitted") ? "" : status);
 
@@ -123,41 +123,136 @@ public class SubmissionService {
         }
 
 //        truong hop ca 2 deu khong co du lieu
-        Page<Submission> submissionPage =  submissionRepository.filterSubmissions(
-                courseName,
-                lessonName,
-                submitterEmail,
-                submitterName,
-                status,
-                localDateTimeFrom,
-                localDateTimeTo,
-                pageable
-        );;
+        Page<Submission> submissionPage = null;
+        if (courseName.isEmpty() && lessonName.isEmpty() && submitterName.isEmpty() && submitterUsername.isEmpty()) {
+            submissionPage = submissionRepository.filterSubmissionsAdminWithDateSort(
+                    courseName,
+                    lessonName,
+                    submitterUsername,
+                    submitterName,
+                    status,
+                    localDateTimeFrom,
+                    localDateTimeTo,
+                    pageable
+            );
+
+        } else {
+            submissionPage = submissionRepository.filterSubmissionsAdminWithoutOrder(
+                    courseName,
+                    lessonName,
+                    submitterUsername,
+                    submitterName,
+                    status,
+                    localDateTimeFrom,
+                    localDateTimeTo,
+                    pageable
+            );
+        }
+
 
         return submissionPage.map(submissionMapper::toSubmissionAdminResponse);
     }
 
-    public void deletedSubmission (String submissionId){
+
+
+    public Page<SubmissionClientResponse> filterSubmissionClient(Integer page,
+                                                                 Integer perPage,
+                                                                 String courseName,
+                                                                 String lessonName,
+                                                                 String status,
+                                                                 String from,
+                                                                 String to
+    ) {
+
+        var context = SecurityContextHolder.getContext();
+        String Id = context.getAuthentication().getName();
+
+        page = page == null ? 0 : page - 1;
+        perPage = perPage == null ? 10 : perPage;
+        Pageable pageable = PageRequest.of(page, perPage);
+
+        courseName = courseName == null ? "" : courseName;
+        lessonName = lessonName == null ? "" : lessonName;
+        status = status == null ? "" :
+                (status.equals("submitted.graded") || status.equals("graded.submitted") ? "" : status);
+
+
+        LocalDateTime localDateTimeFrom = null;
+        LocalDateTime localDateTimeTo = null;
+        boolean idFilterDay = true;
+//        Truong hop ca 2 deu co du lieu
+        if (from != null && to != null) {
+            if (from.equals(to)) {
+                LocalDate localDateFrom = LocalDate.parse(from);
+                localDateTimeFrom = localDateFrom.atStartOfDay();
+                localDateTimeTo = localDateFrom.atTime(LocalTime.MAX);
+            } else {
+                LocalDate localDateFrom = LocalDate.parse(from);
+                localDateTimeFrom = localDateFrom.atStartOfDay();
+                LocalDate localDateTo = LocalDate.parse(to);
+                localDateTimeTo = localDateTo.atTime(LocalTime.MAX);
+            }
+
+
+        }
+//        truong hop chi loc trong 1 ngay
+        else if ((from != null && to == null)) {
+            LocalDate localDateFrom = LocalDate.parse(from);
+            localDateTimeFrom = localDateFrom.atStartOfDay();
+            localDateTimeTo = localDateFrom.atTime(LocalTime.MAX); // 2024-06-02T00:00:00
+        }
+
+//        truong hop ca 2 deu khong co du lieu
+        Page<Submission> submissionPage = null;
+        if (courseName.isEmpty() && lessonName.isEmpty() ) {
+            submissionPage = submissionRepository.filterSubmissionsClientWithDateSort(
+                    courseName,
+                    lessonName,
+                    Id,
+                    status,
+                    localDateTimeFrom,
+                    localDateTimeTo,
+                    pageable
+            );
+
+        } else {
+            submissionPage = submissionRepository.filterSubmissionsClientWithoutOrder(
+                    courseName,
+                    lessonName,
+                    Id,
+                    status,
+                    localDateTimeFrom,
+                    localDateTimeTo,
+                    pageable
+            );
+        }
+
+
+        return submissionPage.map(submissionMapper::toSubmissionClientResponse);
+    }
+
+
+
+
+    public void deletedSubmission(String submissionId) {
         Submission submission = submissionRepository.findById(submissionId).orElseThrow(() -> new AppException(SubmissionErrorCode.SUBMISSION_NOT_FOUND));
         submission.setStatus("deleted");
         submissionRepository.save(submission);
     }
 
-    public void updateSubmission (String submissionId, GradedSubmissionRequest request) {
+    public void updateSubmission(String submissionId, GradedSubmissionRequest request) {
         Submission submission = submissionRepository.findById(submissionId).orElseThrow(() -> new AppException(SubmissionErrorCode.SUBMISSION_NOT_FOUND));
 
-        submissionMapper.toSubmission(submission,  request);
+        submissionMapper.toSubmission(submission, request);
         submission.setStatus("graded");
 
-            submission.setReviewedAt(LocalDateTime.now());
+        submission.setReviewedAt(LocalDateTime.now());
 
         if (submission.getAccountGrader() == null) {
             submission.setAccountGrader(authenticationService.getMyAccountCurrent());
         }
         submissionRepository.save(submission);
     }
-
-
 
 
 }
