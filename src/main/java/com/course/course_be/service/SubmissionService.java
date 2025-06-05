@@ -78,21 +78,21 @@ public class SubmissionService {
                                                           String courseName,
                                                           String lessonName,
                                                           String submitterName,
-                                                          String submitterEmail,
+                                                          String submitterUsername,
                                                           String status,
                                                           String from,
                                                           String to
     ) {
 
 
-        page = page == null ? 1 : page - 1;
+        page = page == null ? 0 : page - 1;
         perPage = perPage == null ? 10 : perPage;
         Pageable pageable = PageRequest.of(page, perPage);
 
         courseName = courseName == null ? "" : courseName;
         lessonName = lessonName == null ? "" : lessonName;
         submitterName = submitterName == null ? "" : submitterName;
-        submitterEmail = submitterEmail == null ? "" : submitterEmail;
+        submitterUsername = submitterUsername == null ? "" : submitterUsername;
         status = status == null ? "" :
                 (status.equals("submitted.graded") || status.equals("graded.submitted") ? "" : status);
 
@@ -124,11 +124,11 @@ public class SubmissionService {
 
 //        truong hop ca 2 deu khong co du lieu
         Page<Submission> submissionPage = null;
-        if (courseName.isEmpty() && lessonName.isEmpty() && submitterName.isEmpty() && submitterEmail.isEmpty()) {
+        if (courseName.isEmpty() && lessonName.isEmpty() && submitterName.isEmpty() && submitterUsername.isEmpty()) {
             submissionPage = submissionRepository.filterSubmissionsAdminWithDateSort(
                     courseName,
                     lessonName,
-                    submitterEmail,
+                    submitterUsername,
                     submitterName,
                     status,
                     localDateTimeFrom,
@@ -140,7 +140,7 @@ public class SubmissionService {
             submissionPage = submissionRepository.filterSubmissionsAdminWithoutOrder(
                     courseName,
                     lessonName,
-                    submitterEmail,
+                    submitterUsername,
                     submitterName,
                     status,
                     localDateTimeFrom,
@@ -167,7 +167,7 @@ public class SubmissionService {
         var context = SecurityContextHolder.getContext();
         String Id = context.getAuthentication().getName();
 
-        page = page == null ? 1 : page - 1;
+        page = page == null ? 0 : page - 1;
         perPage = perPage == null ? 10 : perPage;
         Pageable pageable = PageRequest.of(page, perPage);
 
