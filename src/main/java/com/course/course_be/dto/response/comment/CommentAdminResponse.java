@@ -9,12 +9,14 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CommentResponse {
+public class CommentAdminResponse {
     String id;
     String authorId;
     String authorName;
-    String authorAvatar;
     String content;
     Integer replyCount;
+    String lessonId;
+    String lessonName;
     String createdAt;
+    String status;
 }
