@@ -57,7 +57,8 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
                 CASE
                     WHEN COUNT(DISTINCT lp.id) = COUNT(DISTINCT l.id) THEN 'completed'
                     ELSE 'inProgress'
-                END
+                END,
+                COALESCE(c.imageUrl, '')
             )
             FROM CourseEnrollment ce
             JOIN ce.course c
@@ -66,7 +67,7 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             LEFT JOIN l.lessonProgresses lp ON lp.account.id = :accountId
             WHERE ce.account.id = :accountId
               AND (LOWER(c.name) LIKE LOWER(CONCAT('%', :courseName, '%')))
-            GROUP BY c.id, c.name, ce.enrolledAt
+            GROUP BY c.id, c.name, ce.enrolledAt, c.imageUrl
             HAVING (
                 :status IS NULL
                 OR (:status = 'completed' AND COUNT(DISTINCT lp.id) = COUNT(DISTINCT l.id))

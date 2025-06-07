@@ -42,7 +42,7 @@ public interface CourseRepository extends JpaRepository<Course, String> {
 
 
     @Query("""
-                SELECT 
+                SELECT
                     CASE WHEN EXISTS (
                         SELECT 1 FROM Course c
                         JOIN c.chapters ch
