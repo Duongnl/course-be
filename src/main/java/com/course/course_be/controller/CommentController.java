@@ -34,9 +34,9 @@ public class CommentController {
                 .build();
     }
 
-    @GetMapping("/lesson/{lessonId}")
+    @GetMapping("/lesson")
     public ApiResponse<List<CommentResponse>> getCommentsByLesson(
-            @PathVariable String lessonId,
+            @RequestParam(required = true) String lessonId,
             @ModelAttribute CommentFilterRequest filterRequest
     ) {
         Page<CommentResponse> page = commentService.getCommentsByLesson(filterRequest,lessonId);
@@ -49,9 +49,9 @@ public class CommentController {
                 .build();
     }
 
-    @GetMapping("/course/{courseId}")
+    @GetMapping("/course")
     public ApiResponse<List<CommentResponse>> getCommentsByCourse(
-            @PathVariable String courseId,
+            @RequestParam(required = true) String courseId,
             @ModelAttribute CommentFilterRequest commentFilterRequest
     ) {
         // dùng id để filter comment theo bài học, hoặc lesson chẳng hạn
@@ -64,9 +64,9 @@ public class CommentController {
                 .build();
     }
 
-    @GetMapping("/reply/{commentId}")
+    @GetMapping("/reply")
     public ApiResponse<List<CommentResponse>> getCommentReply(
-            @PathVariable String commentId,
+            @RequestParam(required = true) String commentId,
             @ModelAttribute CommentFilterRequest commentFilterRequest
     ) {
         Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest,commentId);
@@ -86,7 +86,7 @@ public class CommentController {
                 .build();
     }
 
-    @PostMapping("/create")
+    @PostMapping("")
     public ApiResponse<CommentResponse> createComment(@RequestBody CommentCreateRequest request){
         return ApiResponse.<CommentResponse>builder()
                 .result(commentService.createComment(request))

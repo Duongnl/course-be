@@ -125,9 +125,14 @@ public class CommentService {
 
     @Transactional
     public CommentResponse createComment(CommentCreateRequest request) {
-
-        Optional<Course> course = courseRepository.findById(request.getCourseId());
-        Optional<Lesson> lesson = lessonRepository.findById(request.getCourseId());
+        Optional<Course> course = Optional.empty();
+        if (request.getCourseId() != null) {
+            course = courseRepository.findById(request.getCourseId());
+        }
+        Optional<Lesson> lesson = Optional.empty();
+        if (request.getLessonId() != null) {
+            lesson = lessonRepository.findById(request.getLessonId());
+        }
         Optional<Comment> commentParent = commentRepository.findById(Integer.parseInt(request.getCommentParentId()));
 
         Comment comment = Comment.builder()
@@ -136,11 +141,10 @@ public class CommentService {
                 .status("active")
                 .account(authenticationService.getMyAccountCurrent())
                 .content(request.getContent())
-                .lesson(lesson.orElse(null))
                 .course(course.orElse(null))
                 .lesson(lesson.orElse(null))
                 .build();
-
+        commentRepository.save(comment);
         return commentMapper.toCommentResponse(comment);
     }
 }
