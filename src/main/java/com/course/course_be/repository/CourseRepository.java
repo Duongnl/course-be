@@ -1,6 +1,5 @@
 package com.course.course_be.repository;
 
-import com.course.course_be.entity.Account;
 import com.course.course_be.entity.Category;
 import com.course.course_be.entity.Course;
 import org.springframework.data.domain.Page;
@@ -111,5 +110,13 @@ public interface CourseRepository extends JpaRepository<Course, String> {
                                             Pageable pageable);
 
     List<Course> findByCategoryAndStatus(Category category, String status, Pageable pageable);
+
+    Page<Course> findByNameContainingAndDetailContainingAndStatusNot(String name, String detail, String status, Pageable pageable);
+
+    Page<Course> findByNameContainingAndStatusNot(String name, String status, Pageable pageable);
+
+    Page<Course> findByNameContainingAndDetailContainingAndStatusIn(String name, String detail, List<String> statusList, Pageable pageable);
+
+    Page<Course> findByNameContainingAndStatusIn(String name, List<String> statusList, Pageable pageable);
 
 }
