@@ -38,9 +38,7 @@ public class CreateAccountRequest {
     @Pattern(regexp = "MALE|FEMALE|OTHER", message = "Sex must be MALE, FEMALE, or OTHER")
     private String sex;
 
-
     private String phone;
-
 
     private String avatarUrl;
 
