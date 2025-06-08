@@ -62,13 +62,14 @@ public class AccountController {
            @RequestParam(required = false) Integer page,
            @RequestParam(required = false) Integer perPage,
            @RequestParam(required = false) String name,
+           @RequestParam(required = false) String username,
            @RequestParam(required = false) String email,
            @RequestParam(required = false) String sex,
            @RequestParam(required = false) String role,
            @RequestParam(required = false) String status
    ) {
       Page<AccountResponse> accountPage = accountService.filterAccounts(
-              page, perPage, name, email, sex, role, status
+              page, perPage, name, username, email, sex, role, status
       );
       return ApiResponse.<List<AccountResponse>>builder()
               .result(accountPage.stream().toList())

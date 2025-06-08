@@ -72,6 +72,7 @@ public class AccountService {
             Integer page,
             Integer perPage,
             String name,
+            String username,
             String email,
             String sex,
             String role,
@@ -85,6 +86,7 @@ public class AccountService {
 
         // Handle filter parameters
         name = name == null ? "" : name;
+        username = username == null ? "" : username;
         email = email == null ? "" : email;
         sex = sex == null ? "" : sex;
         role = role == null ? "" : role;
@@ -92,7 +94,7 @@ public class AccountService {
 
         // Fetch accounts from repository
         Page<Account> accountPage = accountRepository.filterAccounts(
-                name, email, sex, role, status, pageable
+                name, username, email, sex, role, status, pageable
         );
 
         // Map to DTO
