@@ -2,8 +2,11 @@ package com.course.course_be.controller;
 
 import com.course.course_be.dto.request.account.CreateAccountRequest;
 import com.course.course_be.dto.request.account.UpdateAccountRequest;
+import com.course.course_be.dto.request.account.UpdatePasswordRequest;
+import com.course.course_be.dto.request.profile.ProfileUpdateRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.account.*;
+import com.course.course_be.dto.response.profile.UserProfileResponse;
 import com.course.course_be.entity.Account;
 import com.course.course_be.service.AccountService;
 import com.course.course_be.service.CourseEnrollmentService;
@@ -15,6 +18,7 @@ import com.turkraft.springfilter.boot.Filter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -121,6 +125,14 @@ public class AccountController {
       return ApiResponse.<List<MyCourseResponse>>builder()
               .result(courseProgressPage.stream().toList())
               .totalPages(courseProgressPage.getTotalPages())
+              .build();
+   }
+
+   @PutMapping("/change-password")
+   public ApiResponse<Void> changePassword(@Valid @RequestBody UpdatePasswordRequest request) {
+      accountService.changePassword(request);
+      return ApiResponse.<Void>builder()
+              .message("Password changed successfully.")
               .build();
    }
 

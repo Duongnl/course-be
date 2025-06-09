@@ -2,6 +2,7 @@ package com.course.course_be.service;
 
 import com.course.course_be.dto.request.account.CreateAccountRequest;
 import com.course.course_be.dto.request.account.UpdateAccountRequest;
+import com.course.course_be.dto.request.account.UpdatePasswordRequest;
 import com.course.course_be.dto.response.account.AccountResponse;
 import com.course.course_be.dto.response.account.CurrentAccountResponse;
 import com.course.course_be.dto.response.account.ResultPaginationDTO;
@@ -248,6 +249,32 @@ public class AccountService {
             if (accountRepository.existsByUsernameAndIdNot(username, excludeId)) {
                 throw new AppException(AccountErrorCode.USERNAME_ALREADY_EXISTS);
             }
+        }
+    }
+
+    @Transactional
+    public void changePassword(UpdatePasswordRequest request) {
+        // Lấy account hiện tại
+        Account account = authenticationService.getMyAccountCurrent();
+
+        // Kiểm tra mật khẩu cũ
+        if (!request.getOldPassword().equals(account.getPassword())) {
+            throw new AppException(AccountErrorCode.OLD_PASSWORD_INCORRECT);
+        }
+
+        // Kiểm tra nếu mật khẩu cũ và mật khẩu mới giống nhau
+        if (request.getOldPassword().equals(request.getNewPassword())) {
+            throw new AppException(AccountErrorCode.NEW_PASSWORD_SAME_AS_OLD);
+        }
+
+        // Cập nhật mật khẩu mới
+        account.setPassword(request.getNewPassword());
+
+        // Lưu thay đổi vào cơ sở dữ liệu
+        try {
+            accountRepository.save(account);
+        } catch (Exception e) {
+            throw new AppException(AccountErrorCode.SAVE_PASSWORD_FAIL);
         }
     }
 }
