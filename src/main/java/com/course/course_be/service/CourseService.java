@@ -3,6 +3,7 @@ package com.course.course_be.service;
 import com.course.course_be.dto.request.course.CreateCourseRequest;
 import com.course.course_be.dto.request.course.UpdateCourseRequest;
 import com.course.course_be.dto.response.course.CourseResponse;
+import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.entity.Category;
 import com.course.course_be.entity.Course;
@@ -133,5 +134,14 @@ public class CourseService {
         Course course = courseRepository.findById(id).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
         course.setStatus("deleted");
         courseRepository.save(course);
+    }
+
+    public  CountResponse countCourse  () {
+        return CountResponse.builder()
+                .name("course")
+                .value(courseRepository.countByStatus("active"))
+                .total(courseRepository.countByStatusNot("deleted"))
+                .build();
+
     }
 }

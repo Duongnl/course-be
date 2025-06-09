@@ -15,6 +15,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, String> 
     Submission findByLessonIdAndAccountSubmitterId(String submissionId, String accountSubmitterId);
     boolean existsByLessonIdAndAccountSubmitterId(String lessonId, String accountSubmitterId);
 
+    long countByStatus(String status);
 
 
     @Query("""

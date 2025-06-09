@@ -5,12 +5,14 @@ import com.course.course_be.dto.request.account.UpdateAccountRequest;
 import com.course.course_be.dto.response.account.AccountResponse;
 import com.course.course_be.dto.response.account.CurrentAccountResponse;
 import com.course.course_be.dto.response.account.ResultPaginationDTO;
+import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.entity.Account;
 import com.course.course_be.entity.Profile;
 import com.course.course_be.exception.AccountErrorCode;
 import com.course.course_be.exception.AppException;
 import com.course.course_be.mapper.AccountMapper;
 import com.course.course_be.repository.AccountRepository;
+import com.course.course_be.repository.CourseEnrollmentRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 
 @Service
@@ -35,6 +36,7 @@ public class AccountService {
     AccountRepository accountRepository;
     AuthenticationService authenticationService;
     AccountMapper accountMapper;
+    CourseEnrollmentRepository courseEnrollmentRepository;
 
     public CurrentAccountResponse getCurrentAccount() {
         Account account= authenticationService.getMyAccountCurrent();
@@ -247,5 +249,21 @@ public class AccountService {
                 throw new AppException(AccountErrorCode.USERNAME_ALREADY_EXISTS);
             }
         }
+    }
+
+    public CountResponse countAccount  () {
+        return CountResponse.builder()
+                .name("user")
+                .value(accountRepository.countByStatus("active"))
+                .total(accountRepository.countByStatusNot("deleted"))
+                .build();
+    }
+
+    public CountResponse countAccountEnroll () {
+        return CountResponse.builder()
+                .name("enroll")
+                .value(courseEnrollmentRepository.countActiveAccountsEnrolled())
+                .total(accountRepository.countByStatus("active"))
+                .build();
     }
 }

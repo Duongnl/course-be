@@ -2,6 +2,7 @@ package com.course.course_be.service;
 
 import com.course.course_be.dto.request.submissionadmin.GradedSubmissionRequest;
 import com.course.course_be.dto.request.submissionclient.SubmissionClientRequest;
+import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.dto.response.submissionadmin.SubmissionAdminResponse;
 import com.course.course_be.dto.response.submissionclient.SubmissionClientResponse;
 import com.course.course_be.entity.Account;
@@ -22,13 +23,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -252,6 +250,14 @@ public class SubmissionService {
             submission.setAccountGrader(authenticationService.getMyAccountCurrent());
         }
         submissionRepository.save(submission);
+    }
+
+    public CountResponse countSubmitted () {
+        return CountResponse.builder()
+                .name("submission")
+                .value(submissionRepository.countByStatus("submitted"))
+                .build();
+
     }
 
 
