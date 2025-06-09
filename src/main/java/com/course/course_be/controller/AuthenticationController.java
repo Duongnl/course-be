@@ -22,7 +22,7 @@ public class AuthenticationController {
     AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ApiResponse<AuthenticationResponse> login (@RequestBody LoginRequest loginRequest) {
+    public ApiResponse<AuthenticationResponse> login(@RequestBody LoginRequest loginRequest) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.login(loginRequest))
                 .build();
@@ -30,30 +30,29 @@ public class AuthenticationController {
     }
 
 
-//    Xin access token moi tu refresh token
+    //    Xin access token moi tu refresh token
     @PostMapping("refresh")
-    public ApiResponse<AuthenticationResponse> refreshToken (@RequestBody @Valid RefreshTokenRequest authenticationRequest) {
+    public ApiResponse<AuthenticationResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest authenticationRequest) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.refreshToken(authenticationRequest))
                 .build();
     }
 
     @GetMapping("/hello")
-    public  ApiResponse<String> hello() {
+    public ApiResponse<String> hello() {
         return ApiResponse.<String>builder()
                 .result("Hello")
                 .build();
     }
 
 
-//  Dang nhap bang google
+    //  Dang nhap bang google
     @PostMapping("/google")
     public ApiResponse<AuthenticationResponse> loginWithGoogle(@RequestBody AuthenticationRequest authenticationRequest) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.loginWithGoogle(authenticationRequest))
                 .build();
     }
-
 
 
     @PostMapping("/introspect-refresh-token")
@@ -70,19 +69,11 @@ public class AuthenticationController {
 
     @PostMapping("/introspect-access-token")
     public ApiResponse<AuthenticationResponse> introspectAccessToken(@RequestBody @Valid AccessTokenRequest request) {
-        boolean bool = authenticationService.introspectAccessToken(request);
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(
-                        AuthenticationResponse.builder()
-                                .authenticated(bool)
-                                .build()
-                )
+                        authenticationService.introspectAccessToken(request))
                 .build();
     }
-
-
-
-
 
 
 }

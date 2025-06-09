@@ -10,13 +10,14 @@ import java.time.LocalDateTime;
 public class AccountResponse {
     private String id;
     private String name;
-    private String email;
     private String username;
-    private String phone;
-    private String avatarUrl;
-    private LocalDateTime createdAt;
-    private String status;
+    private String email;
     private String role;
+    private String status;
     private String sex;
-    private LocalDate birthday;
+    private String phone;
+    private String password;
+    private String avatarUrl;
+    private String birthday;
+    private String createdAt;
 }

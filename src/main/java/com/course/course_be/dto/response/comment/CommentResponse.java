@@ -13,10 +13,8 @@ public class CommentResponse {
     String id;
     String authorId;
     String authorName;
+    String authorAvatar;
     String content;
     Integer replyCount;
-    String lessonId;
-    String lessonName;
     String createdAt;
-    String status;
 }

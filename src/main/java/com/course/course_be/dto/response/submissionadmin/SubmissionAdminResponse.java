@@ -16,7 +16,7 @@ public class SubmissionAdminResponse {
    String courseName; // ten khoa hoc
    String lessonName; // ten bai hoc
 
-   String submitterEmail; // email nguoi nop
+   String submitterUsername; // email nguoi nop
    String submitterName; // ten nguoi nop
    String submissionUrl;
 

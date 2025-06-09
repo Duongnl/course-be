@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum CommentErrorCode implements ErrorCode {
+    COMMENT_NOT_FOUND("COMMENT_1","Comment not found", HttpStatus.NOT_FOUND)
     ;
 
     CommentErrorCode(String code, String message, HttpStatus httpStatus) {

@@ -57,7 +57,7 @@ public class Account {
     String status;
 
 //     Profile cua tai khoan
-    @OneToOne(mappedBy = "account")
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonBackReference
     private Profile profile;
 

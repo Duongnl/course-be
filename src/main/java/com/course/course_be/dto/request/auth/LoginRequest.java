@@ -1,6 +1,7 @@
 package com.course.course_be.dto.request.auth;
 
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,7 +12,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LoginRequest {
 
+    @NotBlank(message = "NOT_BLANK")
     String username;
 
+    @NotBlank(message = "NOT_BLANK")
     String password;
 }
