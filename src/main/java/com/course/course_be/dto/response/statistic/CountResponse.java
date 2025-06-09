@@ -1,0 +1,16 @@
+package com.course.course_be.dto.response.statistic;
+
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class CountResponse {
+    String name;
+    long value;
+    long total;
+}

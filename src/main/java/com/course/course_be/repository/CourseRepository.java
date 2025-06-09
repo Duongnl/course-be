@@ -119,4 +119,6 @@ public interface CourseRepository extends JpaRepository<Course, String> {
 
     Page<Course> findByNameContainingAndStatusIn(String name, List<String> statusList, Pageable pageable);
 
+    long countByStatus(String status);
+    long countByStatusNot(String status);
 }
