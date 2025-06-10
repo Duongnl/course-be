@@ -1,5 +1,7 @@
 package com.course.course_be.configuration;
 
+import com.course.course_be.repository.AccountRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +15,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -36,9 +39,15 @@ public class SecurityConfig {
     @Value("${allowed}")
     private String ALLOWED_ORIGIN  ;
 
+
+
+    @Autowired
+    AccountStatusFilter accountStatusFilter;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-//       cac request trong nay la se duoc public vi dung dang nhap
+
+        //       cac request trong nay la se duoc public vi dung dang nhap
         httpSecurity
                 .authorizeHttpRequests(request ->
                         request
@@ -61,6 +70,10 @@ public class SecurityConfig {
 //      mac dinh  tat cau hinh nay di
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
         httpSecurity.addFilterBefore(corsFilter(), CorsFilter.class);
+
+        httpSecurity.addFilterAfter(accountStatusFilter, BearerTokenAuthenticationFilter.class);
+
+
         return httpSecurity.build();
     }
 
