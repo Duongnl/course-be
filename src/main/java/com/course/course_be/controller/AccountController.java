@@ -6,6 +6,7 @@ import com.course.course_be.dto.request.account.UpdatePasswordRequest;
 import com.course.course_be.dto.request.profile.ProfileUpdateRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.account.*;
+import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.dto.response.profile.UserProfileResponse;
 import com.course.course_be.entity.Account;
 import com.course.course_be.service.AccountService;
@@ -29,37 +30,29 @@ import java.util.List;
 @RequiredArgsConstructor // autowire
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AccountController {
-   AccountService accountService;
-   CourseEnrollmentService courseEnrollmentService;
+    AccountService accountService;
+    CourseEnrollmentService courseEnrollmentService;
 
-   @GetMapping("/current-account")
-   public ApiResponse<CurrentAccountResponse> getCurrentAccount() {
-      return ApiResponse.<CurrentAccountResponse>builder()
-              .result(accountService.getCurrentAccount())
-              .build();
-   }
+    @GetMapping("/current-account")
+    public ApiResponse<CurrentAccountResponse> getCurrentAccount() {
+        return ApiResponse.<CurrentAccountResponse>builder()
+                .result(accountService.getCurrentAccount())
+                .build();
+    }
 
-   @GetMapping("/all-account")
-   public ApiResponse<ResultPaginationDTO> getAllAccount(@Filter Specification<Account> spec , Pageable pageable) {
+    @PostMapping
+    public ApiResponse<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
+        return ApiResponse.<AccountResponse>builder()
+                .result(accountService.createNew(request))
+                .build();
+    }
 
-      return ApiResponse.<ResultPaginationDTO>builder()
-              .result(accountService.getAllAccounts(spec, pageable))
-              .build();
-   }
-
-   @PostMapping
-   public ApiResponse<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
-      return ApiResponse.<AccountResponse>builder()
-              .result(accountService.createNew(request))
-              .build();
-   }
-
-   @GetMapping("/{id}")
-   public ApiResponse<AccountResponse> getAccountById(@PathVariable String id) {
-      return ApiResponse.<AccountResponse>builder()
-              .result(accountService.findById(id))
-              .build();
-   }
+    @GetMapping("/{id}")
+    public ApiResponse<AccountResponse> getAccountById(@PathVariable String id) {
+        return ApiResponse.<AccountResponse>builder()
+                .result(accountService.findById(id))
+                .build();
+    }
 
    @GetMapping("")
    public ApiResponse<List<AccountResponse>> filterAccounts(
@@ -81,52 +74,52 @@ public class AccountController {
               .build();
    }
 
-   @PutMapping("/{id}")
-   public ApiResponse<AccountResponse> updateAccount(@PathVariable String id,
-                                                     @Valid @RequestBody UpdateAccountRequest request) {
-      return ApiResponse.<AccountResponse>builder()
-              .result(accountService.update(id, request))
-              .build();
-   }
+    @PutMapping("/{id}")
+    public ApiResponse<AccountResponse> updateAccount(@PathVariable String id,
+                                                      @Valid @RequestBody UpdateAccountRequest request) {
+        return ApiResponse.<AccountResponse>builder()
+                .result(accountService.update(id, request))
+                .build();
+    }
 
-   @DeleteMapping("/{id}")
-   public ApiResponse<String> deleteAccount(@PathVariable String id) {
-      accountService.delete(id);
-      return ApiResponse.<String>builder()
-              .message("Account deleted successfully")
-              .build();
-   }
+    @DeleteMapping("/{id}")
+    public ApiResponse<String> deleteAccount(@PathVariable String id) {
+        accountService.delete(id);
+        return ApiResponse.<String>builder()
+                .message("Account deleted successfully")
+                .build();
+    }
 
-   @GetMapping("/course-progress/{id}")
-   public ApiResponse<List<CourseProgressResponse>> getCourseProgress(@PathVariable String id,
-                                                                      @RequestParam(required = false) Integer page,
-                                                                      @RequestParam(required = false) Integer perPage,
-                                                                      @RequestParam(required = false) String name,
-                                                                      @RequestParam(required = false) String status
+    @GetMapping("/course-progress/{id}")
+    public ApiResponse<List<CourseProgressResponse>> getCourseProgress(@PathVariable String id,
+                                                                       @RequestParam(required = false) Integer page,
+                                                                       @RequestParam(required = false) Integer perPage,
+                                                                       @RequestParam(required = false) String name,
+                                                                       @RequestParam(required = false) String status
 
-   ) {
+    ) {
 
-      Page<CourseProgressResponse> courseProgressPage =   courseEnrollmentService.getCourseProgress(id,page, perPage, name, status);
-      return ApiResponse.<List<CourseProgressResponse>>builder()
-              .result(courseProgressPage.stream().toList())
-              .totalPages(courseProgressPage.getTotalPages())
-              .build();
-   }
+        Page<CourseProgressResponse> courseProgressPage = courseEnrollmentService.getCourseProgress(id, page, perPage, name, status);
+        return ApiResponse.<List<CourseProgressResponse>>builder()
+                .result(courseProgressPage.stream().toList())
+                .totalPages(courseProgressPage.getTotalPages())
+                .build();
+    }
 
-   @GetMapping("/my-course")
-   public ApiResponse<List<MyCourseResponse>> getMyCourse(
-                                                                      @RequestParam(required = false) Integer page,
-                                                                      @RequestParam(required = false) String name,
-                                                                      @RequestParam(required = false) String status
+    @GetMapping("/my-course")
+    public ApiResponse<List<MyCourseResponse>> getMyCourse(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String status
 
-   ) {
+    ) {
 
-      Page<MyCourseResponse> courseProgressPage =   courseEnrollmentService.getMyCourse(page, name, status);
-      return ApiResponse.<List<MyCourseResponse>>builder()
-              .result(courseProgressPage.stream().toList())
-              .totalPages(courseProgressPage.getTotalPages())
-              .build();
-   }
+        Page<MyCourseResponse> courseProgressPage = courseEnrollmentService.getMyCourse(page, name, status);
+        return ApiResponse.<List<MyCourseResponse>>builder()
+                .result(courseProgressPage.stream().toList())
+                .totalPages(courseProgressPage.getTotalPages())
+                .build();
+    }
 
    @PutMapping("/change-password")
    public ApiResponse<Void> changePassword(@Valid @RequestBody UpdatePasswordRequest request) {
