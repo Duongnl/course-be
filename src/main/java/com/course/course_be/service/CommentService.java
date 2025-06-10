@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.course.course_be.exception.CommentErrorCode.COMMENT_NOT_FOUND;
@@ -40,7 +41,7 @@ public class CommentService {
     private final LessonRepository lessonRepository;
 
     public Page<CommentAdminResponse> getListComment(CommentAdminFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPageIndex(), request.getPageSize(),
+        Pageable pageable = PageRequest.of(request.getPage(), request.getPerPage(),
                 Sort.by(Sort.Direction.fromString(request.getOrder()), request.getSort()));
 
         String accountName = Optional.ofNullable(request.getAuthorName()).orElse("");
@@ -53,7 +54,12 @@ public class CommentService {
 
         return commentPage.map(comment -> {
             CommentAdminResponse response = commentMapper.toCommentAdminResponse(comment);
-            response.setReplyCount(comment.getCommentReplies().size());
+            response.setReplyCount(
+                    (int) comment.getCommentReplies()
+                            .stream()
+                            .filter(reply -> !"inactive".equals(reply.getStatus()))
+                            .count()
+            );
             return response;
         });
     }
@@ -66,12 +72,18 @@ public class CommentService {
 
         // Cập nhật status
         comment.setStatus(request.getStatus());
-
-        return commentMapper.toCommentAdminResponse(comment);
+    CommentAdminResponse response = commentMapper.toCommentAdminResponse(comment);
+        response.setReplyCount(
+                (int) comment.getCommentReplies()
+                        .stream()
+                        .filter(reply -> !"inactive".equals(reply.getStatus()))
+                        .count()
+        );
+        return response;
     }
 
     public Page<CommentResponse> getCommentsByLesson(CommentFilterRequest request, String lessonIdReq) {
-        Pageable pageable = PageRequest.of(request.getPageIndex(), request.getPageSize(),
+        Pageable pageable = PageRequest.of(request.getPage(), request.getPerPage(),
                 Sort.by(Sort.Direction.fromString(request.getOrder()), request.getSort()));
 
         String lessonId = Optional.ofNullable(lessonIdReq).orElse("");
@@ -81,7 +93,12 @@ public class CommentService {
                     .findByLesson_IdAndParentCommentIsNullAndStatusNot(lessonId, "inactive", pageable);
             return commentPage.map(comment -> {
                 CommentResponse response = commentMapper.toCommentResponse(comment);
-                response.setReplyCount(comment.getCommentReplies().size());
+                response.setReplyCount(
+                        (int) comment.getCommentReplies()
+                                .stream()
+                                .filter(reply -> !"inactive".equals(reply.getStatus()))
+                                .count()
+                );
                 return response;
             });
         } else throw new AppException(COMMENT_NOT_FOUND);
@@ -89,7 +106,7 @@ public class CommentService {
     }
 
     public Page<CommentResponse> getCommentsByCourse(CommentFilterRequest request, String courseIdReq) {
-        Pageable pageable = PageRequest.of(request.getPageIndex(), request.getPageSize(),
+        Pageable pageable = PageRequest.of(request.getPage(), request.getPerPage(),
                 Sort.by(Sort.Direction.fromString(request.getOrder()), request.getSort()));
 
         String courseId = Optional.ofNullable(courseIdReq).orElse("");
@@ -99,15 +116,20 @@ public class CommentService {
                     .findByCourse_IdAndParentCommentIsNullAndStatusNot(courseId, "inactive", pageable);
             return commentPage.map(comment -> {
                 CommentResponse response = commentMapper.toCommentResponse(comment);
-                response.setReplyCount(comment.getCommentReplies().size());
+                response.setReplyCount(
+                        (int) comment.getCommentReplies()
+                                .stream()
+                                .filter(reply -> !"inactive".equals(reply.getStatus()))
+                                .count()
+                );
                 return response;
             });
         } else throw new AppException(COMMENT_NOT_FOUND);
 
     }
 
-    public Page<CommentResponse> getCommentReply(CommentFilterRequest request, String commentIdReq) {
-        Pageable pageable = PageRequest.of(request.getPageIndex(), request.getPageSize(),
+    public Page<CommentResponse> getCommentReply(CommentFilterRequest request, String commentIdReq,int type) {
+        Pageable pageable = PageRequest.of(request.getPage(), request.getPerPage(),
                 Sort.by(Sort.Direction.fromString(request.getOrder()), request.getSort()));
 
         String commentId = Optional.ofNullable(commentIdReq).orElse("");
@@ -117,7 +139,12 @@ public class CommentService {
                     .findByParentComment_IdAndStatusNot(Integer.parseInt(commentId), "inactive", pageable);
             return commentPage.map(comment -> {
                 CommentResponse response = commentMapper.toCommentResponse(comment);
-                response.setReplyCount(comment.getCommentReplies().size());
+                response.setReplyCount(
+                        (int) comment.getCommentReplies()
+                                .stream()
+                                .filter(reply -> !"inactive".equals(reply.getStatus()))
+                                .count()
+                );
                 return response;
             });
         } else throw new AppException(COMMENT_NOT_FOUND);
@@ -130,14 +157,24 @@ public class CommentService {
             course = courseRepository.findById(request.getCourseId());
         }
         Optional<Lesson> lesson = Optional.empty();
-        if (request.getLessonId() != null) {
+        if (request.getLessonId() != null && course.isEmpty()) {
             lesson = lessonRepository.findById(request.getLessonId());
         }
-        Optional<Comment> commentParent = commentRepository.findById(Integer.parseInt(request.getCommentParentId()));
+        Optional<Comment> commentParentOptional ;
+        Comment commentParent=null;
+
+        if (request.getCommentParentId() != null) {
+            commentParentOptional = commentRepository.findById(Integer.parseInt(request.getCommentParentId()));
+            if(commentParentOptional.isPresent()){
+                if(commentParentOptional.get().getStatus().equals("active")){
+                    commentParent=commentParentOptional.get();
+                }
+            }
+        }
 
         Comment comment = Comment.builder()
                 .createdAt(LocalDateTime.now())
-                .parentComment(commentParent.orElse(null))
+                .parentComment(commentParent)
                 .status("active")
                 .account(authenticationService.getMyAccountCurrent())
                 .content(request.getContent())

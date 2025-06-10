@@ -8,10 +8,10 @@ import lombok.Setter;
 public class CourseEnrollmentAdminFilterRequest {
     String accountName;
     String courseName;
-    int pageIndex = 0;
+    int page = 0;
 
     @Setter(AccessLevel.NONE)
-    int pageSize = 10;
+    int perPage = 10;
 
     @Setter(AccessLevel.NONE)
     String sort = "enrolledAt";
@@ -21,12 +21,12 @@ public class CourseEnrollmentAdminFilterRequest {
 
     static final int MAX_PAGE_SIZE = 100;
 
-    public void setPageSize(int pageSize) {
-        this.pageSize = Math.min(pageSize, MAX_PAGE_SIZE);
+    public void setPerPage(int perPage) {
+        this.perPage = Math.min(perPage, MAX_PAGE_SIZE);
     }
 
-    public void setPageIndex(int pageIndex) {
-        this.pageIndex = Math.max(0, pageIndex); // Không cho phép pageIndex < 0
+    public void setPage(int page) {
+        this.page = Math.max(0, page-1); // Không cho phép page < 0
     }
 
     public void setSort(String sortParam) {

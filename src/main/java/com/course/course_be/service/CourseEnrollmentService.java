@@ -87,7 +87,7 @@ public class CourseEnrollmentService {
     }
 
     public Page<CourseEnrollmentAdminResponse> getListCourseEnrollment(CourseEnrollmentAdminFilterRequest request) {
-        Pageable pageable = PageRequest.of(request.getPageIndex(), request.getPageSize(),
+        Pageable pageable = PageRequest.of(request.getPage(), request.getPerPage(),
                 Sort.by(Sort.Direction.fromString(request.getOrder()), request.getSort()));
 
         String accountName = Optional.ofNullable(request.getAccountName()).orElse("");
