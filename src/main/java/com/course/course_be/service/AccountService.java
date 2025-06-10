@@ -2,9 +2,9 @@ package com.course.course_be.service;
 
 import com.course.course_be.dto.request.account.CreateAccountRequest;
 import com.course.course_be.dto.request.account.UpdateAccountRequest;
+import com.course.course_be.dto.request.account.UpdatePasswordRequest;
 import com.course.course_be.dto.response.account.AccountResponse;
 import com.course.course_be.dto.response.account.CurrentAccountResponse;
-import com.course.course_be.dto.response.account.ResultPaginationDTO;
 import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.entity.Account;
 import com.course.course_be.entity.Profile;
@@ -45,35 +45,11 @@ public class AccountService {
 
     }
 
-    public ResultPaginationDTO getAllAccounts (Specification<Account> spec, Pageable pageable) {
-        // Lấy danh sách phân trang
-        Page<Account> pageAccount = accountRepository.findAll(spec, pageable);
-
-        // Tạo ResultPaginationDTO
-        ResultPaginationDTO rs = new ResultPaginationDTO();
-        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
-
-        // Thiết lập meta
-        meta.setPage(pageable.getPageNumber() + 1);
-        meta.setPageSize(pageable.getPageSize());
-        meta.setPages(pageAccount.getTotalPages());
-        meta.setTotal(pageAccount.getTotalElements());
-        rs.setMeta(meta);
-
-        // Chuyển đổi sang DTO
-        List<AccountResponse> listAccount = pageAccount.getContent()
-                .stream()
-                .map(accountMapper::toAccountResponse)
-                .toList();
-
-        rs.setResult(listAccount);
-        return rs;
-    }
-
     public Page<AccountResponse> filterAccounts(
             Integer page,
             Integer perPage,
             String name,
+            String username,
             String email,
             String sex,
             String role,
@@ -87,6 +63,7 @@ public class AccountService {
 
         // Handle filter parameters
         name = name == null ? "" : name;
+        username = username == null ? "" : username;
         email = email == null ? "" : email;
         sex = sex == null ? "" : sex;
         role = role == null ? "" : role;
@@ -94,7 +71,7 @@ public class AccountService {
 
         // Fetch accounts from repository
         Page<Account> accountPage = accountRepository.filterAccounts(
-                name, email, sex, role, status, pageable
+                name, username, email, sex, role, status, pageable
         );
 
         // Map to DTO
@@ -139,40 +116,6 @@ public class AccountService {
         return accountMapper.toAccountResponse(account);
     }
 
-    @Transactional(readOnly = true)
-    public ResultPaginationDTO findAll(Specification<Account> spec, Pageable pageable) {
-        // Thêm điều kiện lọc status khác "deleted"
-        Specification<Account> statusSpec = (root, query, criteriaBuilder) ->
-                criteriaBuilder.notEqual(root.get("status"), "deleted");
-
-        // Kết hợp với specification từ @Filter
-        Specification<Account> combinedSpec = spec != null ?
-                Specification.where(statusSpec).and(spec) : statusSpec;
-
-        // Lấy danh sách phân trang với specification
-        Page<Account> pageAccount = accountRepository.findAll(combinedSpec, pageable);
-
-        // Tạo ResultPaginationDTO
-        ResultPaginationDTO rs = new ResultPaginationDTO();
-        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
-
-        // Thiết lập meta
-        meta.setPage(pageable.getPageNumber() + 1);
-        meta.setPageSize(pageable.getPageSize());
-        meta.setPages(pageAccount.getTotalPages());
-        meta.setTotal(pageAccount.getTotalElements());
-        rs.setMeta(meta);
-
-        // Chuyển đổi sang DTO
-        List<AccountResponse> listAccount = pageAccount.getContent()
-                .stream()
-                .map(accountMapper::toAccountResponse)
-                .toList();
-
-        rs.setResult(listAccount);
-        return rs;
-    }
-
     public AccountResponse update(String id, UpdateAccountRequest request) {
         Account account = accountRepository.findByIdAndStatusNot(id, "deleted")
                 .orElseThrow(() -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND));
@@ -212,27 +155,6 @@ public class AccountService {
         accountRepository.save(account);
     }
 
-//    @Transactional(readOnly = true)
-//    public AccountResponse findByEmail(String email) {
-//        Account account = accountRepository.findByEmailAndStatusNot(email, "deleted")
-//                .orElseThrow(() -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND));
-//        return accountMapper.toAccountResponse(account);
-//    }
-//
-//    @Transactional(readOnly = true)
-//    public AccountResponse findByUsername(String username) {
-//        Account account = accountRepository.findByUsernameAndStatusNot(username, "deleted")
-//                .orElseThrow(() -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND));
-//        return accountMapper.toAccountResponse(account);
-//    }
-//
-//    public void changePassword(String id, String newPassword) {
-//        Account account = accountRepository.findByIdAndStatusNot(id, "deleted")
-//                .orElseThrow(() -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND));
-//        account.setPassword(newPassword);
-//        accountRepository.save(account);
-//    }
-
     private void validateEmailAndUsername(String email, String username, String excludeId) {
         if (excludeId == null) {
             if (accountRepository.existsByEmail(email)) {
@@ -265,5 +187,31 @@ public class AccountService {
                 .value(courseEnrollmentRepository.countActiveAccountsEnrolled())
                 .total(accountRepository.countByStatus("active"))
                 .build();
+    }
+
+    @Transactional
+    public void changePassword(UpdatePasswordRequest request) {
+        // Lấy account hiện tại
+        Account account = authenticationService.getMyAccountCurrent();
+
+        // Kiểm tra mật khẩu cũ
+        if (!request.getOldPassword().equals(account.getPassword())) {
+            throw new AppException(AccountErrorCode.OLD_PASSWORD_INCORRECT);
+        }
+
+        // Kiểm tra nếu mật khẩu cũ và mật khẩu mới giống nhau
+        if (request.getOldPassword().equals(request.getNewPassword())) {
+            throw new AppException(AccountErrorCode.NEW_PASSWORD_SAME_AS_OLD);
+        }
+
+        // Cập nhật mật khẩu mới
+        account.setPassword(request.getNewPassword());
+
+        // Lưu thay đổi vào cơ sở dữ liệu
+        try {
+            accountRepository.save(account);
+        } catch (Exception e) {
+            throw new AppException(AccountErrorCode.SAVE_PASSWORD_FAIL);
+        }
     }
 }

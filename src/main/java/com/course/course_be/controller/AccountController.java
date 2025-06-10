@@ -2,9 +2,12 @@ package com.course.course_be.controller;
 
 import com.course.course_be.dto.request.account.CreateAccountRequest;
 import com.course.course_be.dto.request.account.UpdateAccountRequest;
+import com.course.course_be.dto.request.account.UpdatePasswordRequest;
+import com.course.course_be.dto.request.profile.ProfileUpdateRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.account.*;
 import com.course.course_be.dto.response.statistic.CountResponse;
+import com.course.course_be.dto.response.profile.UserProfileResponse;
 import com.course.course_be.entity.Account;
 import com.course.course_be.service.AccountService;
 import com.course.course_be.service.CourseEnrollmentService;
@@ -16,6 +19,7 @@ import com.turkraft.springfilter.boot.Filter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,14 +40,6 @@ public class AccountController {
                 .build();
     }
 
-    @GetMapping("/all-account")
-    public ApiResponse<ResultPaginationDTO> getAllAccount(@Filter Specification<Account> spec, Pageable pageable) {
-
-        return ApiResponse.<ResultPaginationDTO>builder()
-                .result(accountService.getAllAccounts(spec, pageable))
-                .build();
-    }
-
     @PostMapping
     public ApiResponse<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
         return ApiResponse.<AccountResponse>builder()
@@ -58,24 +54,25 @@ public class AccountController {
                 .build();
     }
 
-    @GetMapping("")
-    public ApiResponse<List<AccountResponse>> filterAccounts(
-            @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer perPage,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String sex,
-            @RequestParam(required = false) String role,
-            @RequestParam(required = false) String status
-    ) {
-        Page<AccountResponse> accountPage = accountService.filterAccounts(
-                page, perPage, name, email, sex, role, status
-        );
-        return ApiResponse.<List<AccountResponse>>builder()
-                .result(accountPage.stream().toList())
-                .totalPages(accountPage.getTotalPages())
-                .build();
-    }
+   @GetMapping("")
+   public ApiResponse<List<AccountResponse>> filterAccounts(
+           @RequestParam(required = false) Integer page,
+           @RequestParam(required = false) Integer perPage,
+           @RequestParam(required = false) String name,
+           @RequestParam(required = false) String username,
+           @RequestParam(required = false) String email,
+           @RequestParam(required = false) String sex,
+           @RequestParam(required = false) String role,
+           @RequestParam(required = false) String status
+   ) {
+      Page<AccountResponse> accountPage = accountService.filterAccounts(
+              page, perPage, name, username, email, sex, role, status
+      );
+      return ApiResponse.<List<AccountResponse>>builder()
+              .result(accountPage.stream().toList())
+              .totalPages(accountPage.getTotalPages())
+              .build();
+   }
 
     @PutMapping("/{id}")
     public ApiResponse<AccountResponse> updateAccount(@PathVariable String id,
@@ -124,6 +121,13 @@ public class AccountController {
                 .build();
     }
 
+   @PutMapping("/change-password")
+   public ApiResponse<Void> changePassword(@Valid @RequestBody UpdatePasswordRequest request) {
+      accountService.changePassword(request);
+      return ApiResponse.<Void>builder()
+              .message("Password changed successfully.")
+              .build();
+   }
 
 
 
