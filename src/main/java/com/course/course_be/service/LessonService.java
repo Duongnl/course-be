@@ -36,13 +36,23 @@ public class LessonService {
     LessonProgressRepository lessonProgressRepository;
     LessonRepository lessonRepository;
     SubmissionRepository submissionRepository;
+    AuthenticationService authenticationService;
     public CourseInfoResponse getCourseInfo(String lessonId) {
-        var context = SecurityContextHolder.getContext();
-        String Id = context.getAuthentication().getName();
+       Account account = authenticationService
+               .getMyAccountCurrent();
+        Course course = new Course();
+        System.out.println(" account >>> " + account.getStatus());
+       if (account.getRole().equals("ADMIN")) {
 
-        Course course = courseRepository.findCourseByLessonIdWithChaptersAndLessonsAndAccountId(lessonId, Id )
-                .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
-
+           course = courseRepository.findCourseByLessonIdWithChaptersAndLessons(lessonId).
+                    orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+           System.out.println("course admin >>> " + course.getName());
+       } else {
+           course = courseRepository.findCourseByLessonIdWithChaptersAndLessonsAndAccountId(lessonId, account.getId() )
+                   .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+           System.out.println("course client >>> " + course.getName());
+       }
+        System.out.println("course >>> " + course.getName());
         CourseInfoResponse courseInfoResponse = courseMapper.toCourseInfoResponse(course);
 
         List<ChapterSidebarResponse> chapterSidebarResponses = new ArrayList<>();
@@ -56,7 +66,7 @@ public class LessonService {
             }
         }
 
-        Set<String> viewedLessonIds = new HashSet<>(lessonProgressRepository.findViewedLessonIds(Id, allLessonIds));
+        Set<String> viewedLessonIds = new HashSet<>(lessonProgressRepository.findViewedLessonIds(account.getId(), allLessonIds));
 
         for (Chapter chapterItem: course.getChapters() ) {
             ChapterSidebarResponse chapterSidebarResponse = chapterMapper.toChapterSidebarResponse(chapterItem);
@@ -90,12 +100,18 @@ public class LessonService {
     }
 
     public LessonClientDetailResponse getLesson (String lessonId) {
-        var context = SecurityContextHolder.getContext();
-        String accountId = context.getAuthentication().getName();
-        Lesson lesson = lessonRepository.findAuthorizedLessonById(lessonId,accountId)
-                .orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
+        Account account = authenticationService.getMyAccountCurrent();
+        Lesson lesson = new Lesson();
+        if (account.getRole().equals("ADMIN")) {
+            lesson = lessonRepository.findById(lessonId)
+                    .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+        } else {
+            lesson = lessonRepository.findAuthorizedLessonById(lessonId,account.getId())
+                    .orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
+        }
+
         LessonClientDetailResponse lessonClientDetailResponse =   lessonMapper.toLessonClientDetailResponse(lesson);
-        Submission submission = submissionRepository.findByLessonIdAndAccountSubmitterId(lesson.getId(), accountId);
+        Submission submission = submissionRepository.findByLessonIdAndAccountSubmitterId(lesson.getId(), account.getId());
 
         if (submission != null) {
         lessonClientDetailResponse.setSubmissionUrl(submission.getSubmissionUrl());
