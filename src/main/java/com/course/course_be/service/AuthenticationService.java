@@ -394,9 +394,9 @@ public class AuthenticationService {
                 .subject(account.getId())
                 .issuer("course.com") // token nay dc issuer tu ai
                 .issueTime(new Date()) // thoi diem hien tai
-                // .expirationTime(new Date(
-                //         Instant.now().plus(15, ChronoUnit.MINUTES) // 15 phút là chuẩn an toàn
-                //                 .toEpochMilli()))
+                .expirationTime(new Date(
+                        Instant.now().plus(15, ChronoUnit.MINUTES) // 15 phút là chuẩn an toàn
+                                .toEpochMilli()))
                 .claim("scope",account.getRole() )
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject()); // tao pay load
