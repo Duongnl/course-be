@@ -6,12 +6,12 @@ import lombok.Data;
 @Data
 public class CommentFilterRequest {
 
-    private int pageIndex = 0;
-    private int pageSize = 10;
+    private int page = 0;
+    private int perPage = 10;
     private String sort = "createdAt"; // tên cột cần sắp xếp
-    private String order = "desc";     // asc | desc
+    private String order = "asc";     // asc | desc
 
-    public void setPageSize(int pageSize) {
-        this.pageSize = Math.min(pageSize, 100); // giới hạn
+    public void setPerPage(int perPage) {
+        this.perPage = Math.min(perPage, 100); // giới hạn
     }
 }

@@ -18,6 +18,7 @@ public class CurrentAccountResponse {
     String phone;
     String role;
     String avatarUrl;
+    String id;
 
 
 }
