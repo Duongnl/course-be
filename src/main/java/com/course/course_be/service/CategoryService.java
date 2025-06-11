@@ -57,6 +57,7 @@ public class CategoryService {
     public Page<CategoryResponse> getAll(String name, String detail, String status, Pageable pageable) {
         name = name == null ? "" : name;
         Page<Category> page;
+
         if (status == null || status.isEmpty()) {
             page = (detail != null && !detail.isEmpty()) ? categoryRepository.findByNameContainingAndDetailContainingAndStatusNot(name, detail, "deleted", pageable)
                     : categoryRepository.findByNameContainingAndStatusNot(name,"deleted",pageable);

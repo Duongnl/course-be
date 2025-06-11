@@ -41,7 +41,22 @@ public interface CourseRepository extends JpaRepository<Course, String> {
 
 
     @Query("""
-                SELECT 
+    SELECT DISTINCT c FROM Course c
+    JOIN FETCH c.chapters ch
+    JOIN FETCH ch.lessons l
+    WHERE c.id = (
+        SELECT c2.id FROM Course c2
+        JOIN c2.chapters ch2
+        JOIN ch2.lessons l2
+        WHERE l2.id = :lessonId
+    )
+""")
+    Optional<Course> findCourseByLessonIdWithChaptersAndLessons(
+            @Param("lessonId") String lessonId);
+
+
+    @Query("""
+                SELECT
                     CASE WHEN EXISTS (
                         SELECT 1 FROM Course c
                         JOIN c.chapters ch
@@ -119,4 +134,6 @@ public interface CourseRepository extends JpaRepository<Course, String> {
 
     Page<Course> findByNameContainingAndStatusIn(String name, List<String> statusList, Pageable pageable);
 
+    long countByStatus(String status);
+    long countByStatusNot(String status);
 }

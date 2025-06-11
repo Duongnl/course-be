@@ -23,4 +23,5 @@ public class MyCourseResponse {
     long totalLessons;
     LocalDateTime enrolledAt;
     String status;
+    String imageUrl;
 }

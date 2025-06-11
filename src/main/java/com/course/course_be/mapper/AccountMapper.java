@@ -17,6 +17,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface AccountMapper
 {
+    @Mapping(source = "googleId", target = "googleId")
     @Mapping(source = "profile.name", target="name")
     @Mapping(source = "profile.avatarUrl", target="avatarUrl")
     CurrentAccountResponse toCurrentAccountResponse(Account account);

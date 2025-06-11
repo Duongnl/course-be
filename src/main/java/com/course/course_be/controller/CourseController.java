@@ -3,8 +3,8 @@ package com.course.course_be.controller;
 import com.course.course_be.dto.request.course.CreateCourseRequest;
 import com.course.course_be.dto.request.course.UpdateCourseRequest;
 import com.course.course_be.dto.response.ApiResponse;
-import com.course.course_be.dto.response.category.CategoryResponse;
 import com.course.course_be.dto.response.course.CourseResponse;
+import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.service.CourseService;
 import com.course.course_be.utils.PageableUtil;
@@ -13,7 +13,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 

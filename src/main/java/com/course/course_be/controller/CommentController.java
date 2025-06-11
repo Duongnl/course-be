@@ -64,12 +64,26 @@ public class CommentController {
                 .build();
     }
 
-    @GetMapping("/reply")
-    public ApiResponse<List<CommentResponse>> getCommentReply(
+    @GetMapping("/lesson/reply")
+    public ApiResponse<List<CommentResponse>> getCommentLessonReply(
             @RequestParam(required = true) String commentId,
             @ModelAttribute CommentFilterRequest commentFilterRequest
     ) {
-        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest,commentId);
+        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest,commentId,0);
+        return ApiResponse.<List<CommentResponse>>builder()
+                .result(commentPage.getContent())
+                .totalItems(commentPage.getTotalElements())
+                .currentPage(commentPage.getNumber())
+                .totalPages(commentPage.getTotalPages())
+                .build();
+    }
+
+    @GetMapping("/course/reply")
+    public ApiResponse<List<CommentResponse>> getCommentCourseReply(
+            @RequestParam(required = true) String commentId,
+            @ModelAttribute CommentFilterRequest commentFilterRequest
+    ) {
+        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest,commentId,1);
         return ApiResponse.<List<CommentResponse>>builder()
                 .result(commentPage.getContent())
                 .totalItems(commentPage.getTotalElements())

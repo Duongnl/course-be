@@ -124,7 +124,7 @@ public class AuthenticationService {
                 account   =   handleSaveNewAccount(userInfo);
             }
 //            tk cu bi khoa
-            else if (account.equals("inactive")) {
+            else if (!account.getStatus().equals("active")) {
                     throw new AppException(AuthErrorCode.ACCOUNT_LOCKED);
             }
 
@@ -162,9 +162,15 @@ public class AuthenticationService {
             throw new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND);
         }
 
+        if(!account.getStatus().equals("active")) {
+            throw new AppException(AuthErrorCode.ACCOUNT_LOCKED);
+        }
+
         if ( account.getPassword() == null ||  account.getGoogleId() !=null) {
             throw new AppException(AuthErrorCode.UNAUTHENTICATED);
         }
+
+
 
         if (account.getPassword().equals(request.getPassword().trim())) {
             var refreshToken = generateRefreshToken(account);
@@ -229,7 +235,7 @@ public class AuthenticationService {
                         () -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND)
                 );
 
-               if (account.getStatus().equals("inactive")) {
+               if (!account.getStatus().equals("active")) {
                     throw new AppException(AuthErrorCode.ACCOUNT_LOCKED);
                 }
 
@@ -332,13 +338,16 @@ public class AuthenticationService {
             }
             else {
                 Account account = getMyAccountCurrent();
+                if(!account.getStatus().equals("active")) {
+                    throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+                }
                 return  AuthenticationResponse.builder()
                         .role(account.getRole())
                         .authenticated(true)
                         .build();
             }
         } catch (Exception e) {
-            System.out.println("error >>> " + e.getMessage());
+
             throw new AppException(AuthErrorCode.UNAUTHENTICATED);
         }
     }

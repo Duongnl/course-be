@@ -12,11 +12,13 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CurrentAccountResponse {
 
+    String googleId;
     String name;
     String email;
     String phone;
     String role;
     String avatarUrl;
+    String id;
 
 
 }
