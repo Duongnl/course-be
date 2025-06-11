@@ -76,7 +76,7 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
                 OR (:status = 'completed' AND COUNT(DISTINCT lp.id) = COUNT(DISTINCT l.id))
                 OR (:status = 'inProgress' AND COUNT(DISTINCT lp.id) <> COUNT(DISTINCT l.id))
             )
-            ORDER BY ce.enrolledAt DESC
+          
             """)
     Page<MyCourseResponse> findMyCourse(
             @Param("accountId") String accountId,
