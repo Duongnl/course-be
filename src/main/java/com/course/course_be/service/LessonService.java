@@ -1,5 +1,8 @@
 package com.course.course_be.service;
 
+import com.course.course_be.dto.request.lesson.CreateLessonRequest;
+import com.course.course_be.dto.request.lesson.UpdateLessonRequest;
+import com.course.course_be.dto.response.lesson.LessonResponse;
 import com.course.course_be.dto.response.lessonclient.ChapterSidebarResponse;
 import com.course.course_be.dto.response.lessonclient.CourseInfoResponse;
 import com.course.course_be.dto.response.lessonclient.LessonClientDetailResponse;
@@ -16,14 +19,14 @@ import com.course.course_be.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -36,11 +39,13 @@ public class LessonService {
     LessonProgressRepository lessonProgressRepository;
     LessonRepository lessonRepository;
     SubmissionRepository submissionRepository;
+    private final ChapterRepository chapterRepository;
+
     public CourseInfoResponse getCourseInfo(String lessonId) {
         var context = SecurityContextHolder.getContext();
         String Id = context.getAuthentication().getName();
 
-        Course course = courseRepository.findCourseByLessonIdWithChaptersAndLessonsAndAccountId(lessonId, Id )
+        Course course = courseRepository.findCourseByLessonIdWithChaptersAndLessonsAndAccountId(lessonId, Id)
                 .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
 
         CourseInfoResponse courseInfoResponse = courseMapper.toCourseInfoResponse(course);
@@ -58,12 +63,12 @@ public class LessonService {
 
         Set<String> viewedLessonIds = new HashSet<>(lessonProgressRepository.findViewedLessonIds(Id, allLessonIds));
 
-        for (Chapter chapterItem: course.getChapters() ) {
+        for (Chapter chapterItem : course.getChapters()) {
             ChapterSidebarResponse chapterSidebarResponse = chapterMapper.toChapterSidebarResponse(chapterItem);
             chapterSidebarResponses.add(chapterSidebarResponse);
             List<LessonSidebarResponse> lessonSidebars = new ArrayList<>();
 
-            for (Lesson lessonItem: chapterItem.getLessons() ) {
+            for (Lesson lessonItem : chapterItem.getLessons()) {
                 LessonSidebarResponse lessonSidebarResponse = lessonMapper.toLessonSidebarResponse(lessonItem);
 
                 lessonSidebarResponse.setViewed(viewedLessonIds.contains(lessonItem.getId()));
@@ -79,7 +84,7 @@ public class LessonService {
 
 
     //introspectCourseEnrollment
-    public void introspectCourseEnrollment (String lessonId) {
+    public void introspectCourseEnrollment(String lessonId) {
         var context = SecurityContextHolder.getContext();
         String accountId = context.getAuthentication().getName();
 
@@ -89,20 +94,70 @@ public class LessonService {
         }
     }
 
-    public LessonClientDetailResponse getLesson (String lessonId) {
+    public LessonClientDetailResponse getLesson(String lessonId) {
         var context = SecurityContextHolder.getContext();
         String accountId = context.getAuthentication().getName();
-        Lesson lesson = lessonRepository.findAuthorizedLessonById(lessonId,accountId)
+        Lesson lesson = lessonRepository.findAuthorizedLessonById(lessonId, accountId)
                 .orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
-        LessonClientDetailResponse lessonClientDetailResponse =   lessonMapper.toLessonClientDetailResponse(lesson);
+        LessonClientDetailResponse lessonClientDetailResponse = lessonMapper.toLessonClientDetailResponse(lesson);
         Submission submission = submissionRepository.findByLessonIdAndAccountSubmitterId(lesson.getId(), accountId);
 
         if (submission != null) {
-        lessonClientDetailResponse.setSubmissionUrl(submission.getSubmissionUrl());
+            lessonClientDetailResponse.setSubmissionUrl(submission.getSubmissionUrl());
         } else {
             lessonClientDetailResponse.setSubmissionUrl(null);
         }
         return lessonClientDetailResponse;
+    }
+
+    public Page<LessonResponse> getAll(String name, String detail, String status, int chapterId, Pageable pageable) {
+        chapterRepository.findById(chapterId).orElseThrow(() -> new AppException(ChapterErrorCode.CHAPTER_NOT_FOUND));
+        name = name == null ? "" : name;
+        List<String> statusList = new ArrayList<>();
+        if (status != null && !status.trim().isEmpty()) {
+            statusList = Arrays.asList(status.split("\\."));
+        }
+        Page<Lesson> page = lessonRepository.searchLessons(name, detail, status, statusList, chapterId, pageable);
+        return page.map(lessonMapper::toLessonResponse);
+    }
+
+    public LessonResponse createNew(CreateLessonRequest request)  {
+        Chapter chapter = chapterRepository.findById(request.getChapterId()).orElseThrow(() -> new AppException(ChapterErrorCode.CHAPTER_NOT_FOUND));
+        Lesson lesson = Lesson.builder()
+                .lessonNumber(request.getLessonNumber())
+                .name(request.getName())
+                .detail(request.getDetail())
+                .videoUrl(request.getVideoUrl())
+                .duration(request.getDuration())
+                .documentUrl(request.getDocumentUrl())
+                .assignmentUrl(request.getAssignmentUrl())
+                .status("active")
+                .createdAt(LocalDateTime.now())
+                .chapter(chapter)
+                .build();
+        Lesson savedLesson =lessonRepository.save(lesson);
+        return lessonMapper.toLessonResponse(savedLesson);
+    }
+
+    public LessonResponse update(String id, UpdateLessonRequest request)  {
+        Lesson lesson = lessonRepository.findById(id).orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
+        lesson.setLessonNumber(request.getLessonNumber());
+        lesson.setName(request.getName());
+        lesson.setDetail(request.getDetail());
+        lesson.setVideoUrl(request.getVideoUrl());
+        lesson.setDuration(request.getDuration());
+        lesson.setDocumentUrl(request.getDocumentUrl());
+        lesson.setAssignmentUrl(request.getAssignmentUrl());
+        lesson.setStatus(request.getStatus());
+        lesson.setUpdatedAt(LocalDateTime.now());
+        Lesson updatedLesson = lessonRepository.save(lesson);
+        return lessonMapper.toLessonResponse(updatedLesson);
+    }
+
+    public void delete(String id) {
+        Lesson lesson = lessonRepository.findById(id).orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
+        lesson.setStatus("deleted");
+        lessonRepository.save(lesson);
     }
 }
 

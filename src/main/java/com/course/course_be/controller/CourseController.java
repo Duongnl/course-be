@@ -81,5 +81,4 @@ public class CourseController {
                 .message("Course deleted successfully")
                 .build();
     }
-
 }
