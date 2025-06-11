@@ -63,7 +63,7 @@ public interface AccountRepository extends JpaRepository<Account, String>, JpaSp
           (a.status IS NOT NULL AND a.status = :status)
       )
       AND a.status <> 'deleted'
-    ORDER BY a.email ASC
+    ORDER BY a.createdAt DESC
 """)
     Page<Account> filterAccounts(
             @Param("name") String name,

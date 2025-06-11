@@ -97,9 +97,11 @@ public class AccountService {
         Profile profile = Profile.builder()
                 .name(request.getName())
                 .avatarUrl(request.getAvatarUrl())
-                .birthday(LocalDate.parse(request.getBirthday()))
+                .birthday(request.getBirthday() != null && !request.getBirthday().isEmpty()
+                        ? LocalDate.parse(request.getBirthday())
+                        : null) // Gán null nếu rỗng
                 .sex(request.getSex())
-                .account(account)  // Set account reference
+                .account(account) // Set account reference
                 .build();
 
         // Set profile cho account
@@ -140,7 +142,12 @@ public class AccountService {
         if (profile != null) {
             profile.setName(request.getName());
             profile.setAvatarUrl(request.getAvatarUrl());
-            profile.setBirthday(LocalDate.parse(request.getBirthday()));
+            if(request.getBirthday() != null && !request.getBirthday().trim().isEmpty()){
+                profile.setBirthday(LocalDate.parse(request.getBirthday()));
+            } else {
+                profile.setBirthday(null);
+            }
+
             profile.setSex(request.getSex());
         }
 
@@ -156,19 +163,29 @@ public class AccountService {
     }
 
     private void validateEmailAndUsername(String email, String username, String excludeId) {
-        if (excludeId == null) {
-            if (accountRepository.existsByEmail(email)) {
-                throw new AppException(AccountErrorCode.EMAIL_ALREADY_EXISTS);
+        // Bỏ qua kiểm tra nếu email rỗng hoặc null
+        if (email != null && !email.trim().isEmpty()) {
+            if (excludeId == null) {
+                if (accountRepository.existsByEmail(email)) {
+                    throw new AppException(AccountErrorCode.EMAIL_ALREADY_EXISTS);
+                }
+            } else {
+                if (accountRepository.existsByEmailAndIdNot(email, excludeId)) {
+                    throw new AppException(AccountErrorCode.EMAIL_ALREADY_EXISTS);
+                }
             }
-            if (accountRepository.existsByUsername(username)) {
-                throw new AppException(AccountErrorCode.USERNAME_ALREADY_EXISTS);
-            }
-        } else {
-            if (accountRepository.existsByEmailAndIdNot(email, excludeId)) {
-                throw new AppException(AccountErrorCode.EMAIL_ALREADY_EXISTS);
-            }
-            if (accountRepository.existsByUsernameAndIdNot(username, excludeId)) {
-                throw new AppException(AccountErrorCode.USERNAME_ALREADY_EXISTS);
+        }
+
+        // Bỏ qua kiểm tra nếu username rỗng hoặc null
+        if (username != null && !username.trim().isEmpty()) {
+            if (excludeId == null) {
+                if (accountRepository.existsByUsername(username)) {
+                    throw new AppException(AccountErrorCode.USERNAME_ALREADY_EXISTS);
+                }
+            } else {
+                if (accountRepository.existsByUsernameAndIdNot(username, excludeId)) {
+                    throw new AppException(AccountErrorCode.USERNAME_ALREADY_EXISTS);
+                }
             }
         }
     }
