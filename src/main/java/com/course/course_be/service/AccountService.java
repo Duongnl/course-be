@@ -174,6 +174,10 @@ public class AccountService {
                     throw new AppException(AccountErrorCode.EMAIL_ALREADY_EXISTS);
                 }
             }
+        }
+
+        // Bỏ qua kiểm tra nếu username rỗng hoặc null
+        if (username != null && !username.trim().isEmpty()) {
             if (excludeId == null) {
                 if (accountRepository.existsByUsername(username)) {
                     throw new AppException(AccountErrorCode.USERNAME_ALREADY_EXISTS);
@@ -184,8 +188,6 @@ public class AccountService {
                 }
             }
         }
-
-
     }
 
     public CountResponse countAccount  () {
