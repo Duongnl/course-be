@@ -28,7 +28,7 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableWebSecurity
 @EnableMethodSecurity // phan quyen theo method
 public class SecurityConfig {
-
+ 
     private final String[] PUBLIC_ENDPOINTS = {"/auth/refresh", "/auth/google",  "/auth/introspect-refresh-token", "/auth/introspect-access-token", "/auth/login" };
     private final String[] PUBLIC_GET_ENDPOINTS = {
             "/course/filter",
