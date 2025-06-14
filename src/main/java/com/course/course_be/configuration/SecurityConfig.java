@@ -36,8 +36,8 @@ public class SecurityConfig {
             "/course/newest" ,
             "/category/search/**" ,
             "/category",
-            "/comment/course/reply/**",
-            "/comment/course/**"
+            "/comment/course/reply",
+            "/comment/course"
     };
     @Value("${jwt.accessTokenSecret}")
     private String ACCESS_TOKEN_SECRET;

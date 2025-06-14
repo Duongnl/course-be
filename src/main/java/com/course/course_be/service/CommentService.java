@@ -17,6 +17,7 @@ import com.course.course_be.repository.LessonRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -72,7 +73,7 @@ public class CommentService {
 
         // Cập nhật status
         comment.setStatus(request.getStatus());
-    CommentAdminResponse response = commentMapper.toCommentAdminResponse(comment);
+        CommentAdminResponse response = commentMapper.toCommentAdminResponse(comment);
         response.setReplyCount(
                 (int) comment.getCommentReplies()
                         .stream()
@@ -128,7 +129,8 @@ public class CommentService {
 
     }
 
-    public Page<CommentResponse> getCommentReply(CommentFilterRequest request, String commentIdReq,int type) {
+    //type =1 course
+    public Page<CommentResponse> getCommentReply(CommentFilterRequest request, String commentIdReq, int type) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getPerPage(),
                 Sort.by(Sort.Direction.fromString(request.getOrder()), request.getSort()));
 
@@ -160,14 +162,14 @@ public class CommentService {
         if (request.getLessonId() != null && course.isEmpty()) {
             lesson = lessonRepository.findById(request.getLessonId());
         }
-        Optional<Comment> commentParentOptional ;
-        Comment commentParent=null;
+        Optional<Comment> commentParentOptional;
+        Comment commentParent = null;
 
         if (request.getCommentParentId() != null) {
             commentParentOptional = commentRepository.findById(Integer.parseInt(request.getCommentParentId()));
-            if(commentParentOptional.isPresent()){
-                if(commentParentOptional.get().getStatus().equals("active")){
-                    commentParent=commentParentOptional.get();
+            if (commentParentOptional.isPresent()) {
+                if (commentParentOptional.get().getStatus().equals("active")) {
+                    commentParent = commentParentOptional.get();
                 }
             }
         }
@@ -184,5 +186,27 @@ public class CommentService {
         commentRepository.save(comment);
         return commentMapper.toCommentResponse(comment);
     }
+
+
+    public Page<CommentResponse> getCommentPageOfCourse(
+            CommentFilterRequest request,
+            String courseId,
+            String beforeCommentId,
+            LocalDateTime beforeCreatedAt
+    ) {
+        Pageable pageable = PageRequest.of(0, request.getPerPage(), Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Comment> commentPage= commentRepository.findCommentsByCourseWithCursor(courseId, beforeCreatedAt, beforeCommentId, "inactive", pageable);
+        return commentPage.map(comment -> {
+            CommentResponse response = commentMapper.toCommentResponse(comment);
+            response.setReplyCount(
+                    (int) comment.getCommentReplies()
+                            .stream()
+                            .filter(reply -> !"inactive".equals(reply.getStatus()))
+                            .count()
+            );
+            return response;
+        });
+    }
+
 }
 
