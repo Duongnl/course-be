@@ -101,10 +101,11 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
 
 
     @Query("SELECT new com.course.course_be.dto.response.statistic.StatCourseEnrollResponse(c.name, c.imageUrl, COUNT(e)) " +
-            "FROM CourseEnrollment e " +
-            "JOIN e.course c " +
-            "WHERE e.status <> 'deleted' " +
+            "FROM Course c " +
+            "LEFT JOIN c.courseEnrollments e " +
+            "WITH e.status <> 'deleted' " +
             "GROUP BY c.id, c.name, c.imageUrl " +
             "ORDER BY COUNT(e) DESC")
     Page<StatCourseEnrollResponse> findMostEnrolledCourses(Pageable pageable);
+
 }
