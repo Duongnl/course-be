@@ -187,7 +187,6 @@ public class CommentService {
         return commentMapper.toCommentResponse(comment);
     }
 
-
     // public Page<CommentResponse> getCommentPageOfCourse(
     //         CommentFilterRequest request,
     //         String courseId,
