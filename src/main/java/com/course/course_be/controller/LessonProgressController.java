@@ -1,6 +1,7 @@
 package com.course.course_be.controller;
 
 import com.course.course_be.dto.response.ApiResponse;
+import com.course.course_be.dto.response.lesson_progress.LessonProgressResponse;
 import com.course.course_be.entity.LessonProgress;
 import com.course.course_be.service.LessonProgressService;
 import lombok.AccessLevel;
@@ -22,4 +23,8 @@ public class LessonProgressController {
                 .build();
     }
 
+    @GetMapping("/lastView/{courseId}")
+    public ApiResponse<LessonProgressResponse> getLessonProgressOfCourseForUser(@PathVariable("courseId") String courseId) {
+        return  ApiResponse.<LessonProgressResponse>builder().result(lessonProgressService.getLessonProgressLatestOfCourseForUser(courseId)).build();
+    }
 }

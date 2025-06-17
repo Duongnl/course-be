@@ -133,7 +133,14 @@ public interface CourseRepository extends JpaRepository<Course, String> {
     Page<Course> findByNameContainingAndDetailContainingAndStatusIn(String name, String detail, List<String> statusList, Pageable pageable);
 
     Page<Course> findByNameContainingAndStatusIn(String name, List<String> statusList, Pageable pageable);
-
+    @Query("""
+    SELECT DISTINCT c FROM Course c
+    LEFT JOIN FETCH c.chapters ch
+    LEFT JOIN FETCH ch.lessons l
+    WHERE c.id = :id
+      AND c.status = 'active'
+""")
+    Optional<Course> findByIdWithChaptersAndLessons(@Param("id") String id);
     long countByStatus(String status);
     long countByStatusNot(String status);
 }

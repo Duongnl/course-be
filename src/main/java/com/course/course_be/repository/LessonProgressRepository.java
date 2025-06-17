@@ -2,6 +2,7 @@ package com.course.course_be.repository;
 
 import com.course.course_be.entity.Comment;
 import com.course.course_be.entity.LessonProgress;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,4 +18,20 @@ public interface LessonProgressRepository extends JpaRepository<LessonProgress, 
 
     LessonProgress findByAccountIdAndLessonId(String accountId, String lessonId);
 
+    @Query("""
+    SELECT lp
+    FROM LessonProgress lp
+    JOIN lp.lesson l
+    JOIN l.chapter ch
+    JOIN ch.course c
+    WHERE c.id = :courseId
+      AND lp.account.id = :accountId
+      AND l.status = 'active' AND ch.status = 'active' AND c.status = 'active'
+    ORDER BY lp.viewedAt DESC
+""")
+    List<LessonProgress> findLatestProgress(
+            @Param("courseId") String courseId,
+            @Param("accountId") String accountId,
+            Pageable pageable
+    );
 }

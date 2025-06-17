@@ -39,4 +39,10 @@ public interface LessonRepository extends JpaRepository<Lesson, String> {
                                 @Param("statusList") List<String> statusList,
                                 @Param("chapterId") int chapterId,
                                 Pageable pageable);
+    @Query("""
+    SELECT l FROM Lesson l
+    JOIN l.chapter c
+    WHERE c.course.id = :courseId AND l.status = 'active' AND c.status = 'active'
+""")
+    List<Lesson> findFirstLessonInCourse(@Param("courseId") String courseId, Pageable pageable);
 }
