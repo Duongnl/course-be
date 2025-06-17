@@ -52,25 +52,6 @@ public class CommentController {
                 .build();
     }
 
-//     @GetMapping("/course")
-//     public ApiResponse<List<CommentResponse>> getCommentsByCourse(
-//             @RequestParam(required = true) String courseId,
-//             @RequestParam(required = true) String commentId,
-//             @RequestParam(required = true) LocalDateTime createdAt,
-//             @ModelAttribute CommentFilterRequest commentFilterRequest
-//     ) {
-//         // dùng id để filter comment theo bài học, hoặc lesson chẳng hạn
-// //        Page<CommentResponse> commentPage = commentService.getCommentsByCourse(commentFilterRequest,courseId);
-//         Page<CommentResponse> commentPage = commentService.getCommentPageOfCourse(
-//                 commentFilterRequest,courseId,commentId,createdAt);
-//         return ApiResponse.<List<CommentResponse>>builder()
-//                 .result((commentPage.getContent()))
-//                 .totalItems(commentPage.getTotalElements())
-//                 .currentPage(commentPage.getNumber())
-//                 .totalPages(commentPage.getTotalPages())
-//                 .build();
-//     }
-
     @GetMapping("/lesson/reply")
     public ApiResponse<List<CommentResponse>> getCommentLessonReply(
             @RequestParam(required = true) String commentId,
@@ -84,6 +65,23 @@ public class CommentController {
                 .totalPages(commentPage.getTotalPages())
                 .build();
     }
+
+     @GetMapping("/course")
+     public ApiResponse<List<CommentResponse>> getCommentsByCourse(
+             @RequestParam(required = false) String courseId,
+             @RequestParam(required = false) LocalDateTime createdAt,
+             @ModelAttribute CommentFilterRequest commentFilterRequest
+     ) {
+         // dùng id để filter comment theo bài học, hoặc lesson chẳng hạn
+//         Page<CommentResponse> commentPage = commentService.getCommentsByCourse(commentFilterRequest,courseId);
+         Page<CommentResponse> commentPage = commentService.getCommentPageOfCourse( commentFilterRequest,courseId,createdAt);
+         return ApiResponse.<List<CommentResponse>>builder()
+                 .result((commentPage.getContent()))
+                 .totalItems(commentPage.getTotalElements())
+                 .currentPage(commentPage.getNumber())
+                 .totalPages(commentPage.getTotalPages())
+                 .build();
+     }
 
     @GetMapping("/course/reply")
     public ApiResponse<List<CommentResponse>> getCommentCourseReply(

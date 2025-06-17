@@ -187,25 +187,24 @@ public class CommentService {
         return commentMapper.toCommentResponse(comment);
     }
 
-    // public Page<CommentResponse> getCommentPageOfCourse(
-    //         CommentFilterRequest request,
-    //         String courseId,
-    //         String beforeCommentId,
-    //         LocalDateTime beforeCreatedAt
-    // ) {
-    //     Pageable pageable = PageRequest.of(0, request.getPerPage(), Sort.by(Sort.Direction.DESC, "createdAt"));
-    //     Page<Comment> commentPage= commentRepository.findCommentsByCourseWithCursor(courseId, beforeCreatedAt, beforeCommentId, "inactive", pageable);
-    //     return commentPage.map(comment -> {
-    //         CommentResponse response = commentMapper.toCommentResponse(comment);
-    //         response.setReplyCount(
-    //                 (int) comment.getCommentReplies()
-    //                         .stream()
-    //                         .filter(reply -> !"inactive".equals(reply.getStatus()))
-    //                         .count()
-    //         );
-    //         return response;
-    //     });
-    // }
+     public Page<CommentResponse> getCommentPageOfCourse(
+             CommentFilterRequest request,
+             String courseId,
+             LocalDateTime beforeCreatedAt
+     ) {
+         Pageable pageable = PageRequest.of(0, request.getPerPage(), Sort.by(Sort.Direction.DESC, "createdAt"));
+         Page<Comment> commentPage= commentRepository.findCommentsByCourseWithCursor(courseId, beforeCreatedAt, "inactive", pageable);
+         return commentPage.map(comment -> {
+             CommentResponse response = commentMapper.toCommentResponse(comment);
+             response.setReplyCount(
+                     (int) comment.getCommentReplies()
+                             .stream()
+                             .filter(reply -> !"inactive".equals(reply.getStatus()))
+                             .count()
+             );
+             return response;
+         });
+     }
 
 }
 
