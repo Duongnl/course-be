@@ -1,15 +1,24 @@
 package com.course.course_be.service;
 
+import com.course.course_be.dto.request.course_enrollment.RegisterCourseClient;
 import com.course.course_be.dto.response.account.CourseProgressResponse;
 import com.course.course_be.dto.response.account.MyCourseResponse;
 import com.course.course_be.dto.request.course.CourseEnrollmentAdminFilterRequest;
 import com.course.course_be.dto.response.course.CourseEnrollmentAdminResponse;
+import com.course.course_be.dto.response.course_enrollment.CourseEnrollmentResponse;
 import com.course.course_be.dto.response.homeclient.CourseEnrollCardResponse;
 import com.course.course_be.entity.Account;
+import com.course.course_be.entity.Course;
 import com.course.course_be.entity.CourseEnrollment;
+import com.course.course_be.exception.AppException;
+import com.course.course_be.exception.AuthErrorCode;
+import com.course.course_be.exception.CourseEnrollmentErrorCode;
+import com.course.course_be.exception.CourseErrorCode;
 import com.course.course_be.mapper.CourseEnrollmentMapper;
 import com.course.course_be.mapper.CourseMapper;
+import com.course.course_be.repository.AccountRepository;
 import com.course.course_be.repository.CourseEnrollmentRepository;
+import com.course.course_be.repository.CourseRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +29,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +44,8 @@ public class CourseEnrollmentService {
     CourseEnrollmentMapper courseEnrollmentMapper;
     CourseMapper courseMapper;
     CourseEnrollmentRepository courseEnrollmentRepository;
+    private final CourseRepository courseRepository;
+    private final AccountRepository accountRepository;
 
     public List<CourseEnrollCardResponse> getCourseEnroll() {
         Account account = authenticationService.getMyAccountCurrent();
@@ -49,21 +61,21 @@ public class CourseEnrollmentService {
     }
 
 
-    public Page<CourseProgressResponse> getCourseProgress ( String id,
-                                                           Integer page,
-                                                           Integer perPage,
+    public Page<CourseProgressResponse> getCourseProgress(String id,
+                                                          Integer page,
+                                                          Integer perPage,
                                                           String courseName,
-                                                           String status) {
+                                                          String status) {
 
         page = page == null ? 0 : page - 1;
         perPage = perPage == null ? 10 : perPage;
         Pageable pageable = PageRequest.of(page, perPage);
 
         courseName = courseName == null ? "" : courseName;
-        status = status == null ? null : (status.equals("completed.inProgress") || status.equals("inProgress.completed")  || status.isEmpty() ? null : status);
+        status = status == null ? null : (status.equals("completed.inProgress") || status.equals("inProgress.completed") || status.isEmpty() ? null : status);
         System.out.println("course name >>> " + courseName);
 
-        return courseEnrollmentRepository.findCourseProgress(id,courseName, status, pageable);
+        return courseEnrollmentRepository.findCourseProgress(id, courseName, status, pageable);
     }
 
     public Page<MyCourseResponse> getMyCourse (
@@ -102,5 +114,56 @@ public class CourseEnrollmentService {
 
         return courseEnrollmentPage.map(
                 courseEnrollmentMapper::toCourseEnrollmentAdminResponse);
+    }
+
+    public CourseEnrollmentResponse getCourseEnrollmentRegister(String courseId) {
+        var context = SecurityContextHolder.getContext();
+        String accountId = context.getAuthentication().getName();
+        if (accountId == null) {
+            throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+        }
+        courseRepository.findById(courseId).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+        CourseEnrollment courseEnrollment = courseEnrollmentRepository.findByAccountIdAndCourseId(accountId, courseId)
+                .orElse(null);
+        return courseEnrollmentMapper.toCourseEnrollmentResponse(courseEnrollment);
+    }
+
+    public CourseEnrollmentResponse registerCourse(RegisterCourseClient registerCourseClient) {
+        var context = SecurityContextHolder.getContext();
+        String accountId = context.getAuthentication().getName();
+        String courseId = registerCourseClient.getCourseId();
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new AppException(AuthErrorCode.UNAUTHENTICATED));
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+        System.out.println("course id >>> " + course);
+        CourseEnrollment existCourseEnrollment = courseEnrollmentRepository.findByAccountIdAndCourseId(accountId,courseId).orElse(null);
+        if(existCourseEnrollment != null && !existCourseEnrollment.getStatus().equals("deleted")) throw new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_IS_EXIST);
+        if(existCourseEnrollment != null) {
+            existCourseEnrollment.setStatus("pending");
+            existCourseEnrollment.setEnrolledAt(LocalDateTime.now());
+            courseEnrollmentRepository.save(existCourseEnrollment);
+            return  courseEnrollmentMapper.toCourseEnrollmentResponse(existCourseEnrollment);
+        }
+        CourseEnrollment courseEnrollment = CourseEnrollment.builder()
+                .account(account)
+                .course(course)
+                .enrolledAt(LocalDateTime.now())
+                .status("pending")
+                .build();
+        CourseEnrollment savedCourseEnrollment = courseEnrollmentRepository.save(courseEnrollment);
+        return courseEnrollmentMapper.toCourseEnrollmentResponse(savedCourseEnrollment);
+    }
+
+    public void cancelRegisterCourse(String courseId) {
+        var context = SecurityContextHolder.getContext();
+        String accountId = context.getAuthentication().getName();
+        if (accountId == null) {
+            throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+        }
+        courseRepository.findById(courseId).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+        CourseEnrollment existCourseEnrollment = courseEnrollmentRepository.findByAccountIdAndCourseId(accountId,courseId).orElseThrow(() -> new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_NOT_FOUND));
+        if(existCourseEnrollment != null && existCourseEnrollment.getStatus().equals("pending")) {
+            existCourseEnrollment.setStatus("deleted");
+            courseEnrollmentRepository.save(existCourseEnrollment);
+        }
     }
 }

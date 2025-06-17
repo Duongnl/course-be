@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollment, Integer> {
@@ -108,4 +109,15 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             "ORDER BY COUNT(e) DESC")
     Page<StatCourseEnrollResponse> findMostEnrolledCourses(Pageable pageable);
 
+    @Query("""
+                SELECT COUNT(e) > 0
+                FROM CourseEnrollment e
+                WHERE e.course.id = :courseId
+                  AND e.account.id = :accountId
+                  AND e.status = 'active'
+            """)
+    boolean checkIsEnrollmentCourse(@Param("courseId") String courseId,
+                                    @Param("accountId") String accountId);
+
+    Optional<CourseEnrollment> findByAccountIdAndCourseId(String accountId, String courseId);
 }

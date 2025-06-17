@@ -3,10 +3,12 @@ package com.course.course_be.service;
 import com.course.course_be.dto.request.course.CreateCourseRequest;
 import com.course.course_be.dto.request.course.UpdateCourseRequest;
 import com.course.course_be.dto.response.course.CourseResponse;
+import com.course.course_be.dto.response.courseclient.CourseClientResponse;
 import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.entity.Category;
 import com.course.course_be.entity.Course;
+import com.course.course_be.entity.Lesson;
 import com.course.course_be.exception.AppException;
 import com.course.course_be.exception.CategoryErrorCode;
 import com.course.course_be.exception.CourseErrorCode;
@@ -25,6 +27,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +52,31 @@ public class CourseService {
                     : courseRepository.findByNameContainingAndStatusIn(name, statusList, pageable);
         }
         return page.map(courseMapper::toCourseResponse);
+    }
+
+    public CourseClientResponse getCourse(String id) {
+        Course course = courseRepository.findByIdWithChaptersAndLessons(id).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+        course.setChapters(course.getChapters().stream().filter(chapter -> "active".equals(chapter.getStatus())).collect(Collectors.toSet()));
+        course.getChapters().forEach(chapter -> {
+            Set<Lesson> activeLessons = chapter.getLessons().stream()
+                    .filter(lesson -> "active".equals(lesson.getStatus()))
+                            .collect(Collectors.toSet());
+            chapter.setLessons(activeLessons);
+        });
+
+        CourseClientResponse response = courseMapper.toCourseClientResponse(course);
+        int totalLessons = course.getChapters().stream()
+                .mapToInt(ch -> ch.getLessons().size())
+                .sum();
+
+        int totalDuration = course.getChapters().stream()
+                .flatMap(ch -> ch.getLessons().stream())
+                .mapToInt(Lesson::getDuration)
+                .sum();
+
+        response.setTotalLessons(totalLessons);
+        response.setTotalDuration(totalDuration);
+        return response;
     }
 
     public Page<CourseCardResponse> searchCoursesByName(String keyword, Pageable pageable) {
