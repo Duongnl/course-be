@@ -48,8 +48,8 @@ public class CourseController {
     public ApiResponse<List<CourseCardResponse>> filterCourses(@RequestParam(required = false) String sort,
                                                                @RequestParam(required = false) String category,
                                                                @RequestParam(required = false) String keyword,
-                                                               @RequestParam int page,
-                                                               @RequestParam int size
+                                                               @RequestParam Integer page,
+                                                               @RequestParam Integer size
     ) {
 
         Page<CourseCardResponse> course = courseService.filterCourse(sort, category, keyword, page, size);

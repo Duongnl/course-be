@@ -78,22 +78,25 @@ public class CourseEnrollmentService {
         return courseEnrollmentRepository.findCourseProgress(id, courseName, status, pageable);
     }
 
-    public Page<MyCourseResponse> getMyCourse(
-            Integer page,
-
-            String courseName,
-            String status) {
+    public Page<MyCourseResponse> getMyCourse (
+                                                            Integer page,
+                                                            Integer perPage,
+                                                            String courseName,
+                                                            String status) {
 
         var context = SecurityContextHolder.getContext();
         String Id = context.getAuthentication().getName();
 
         page = page == null ? 0 : page - 1;
-
-        Pageable pageable = PageRequest.of(page, 6);
+        perPage = perPage == null ? 6 : perPage;
+        Pageable pageable = PageRequest.of(page, perPage);
 
         courseName = courseName == null ? "" : courseName;
-        status = status == null ? null : (status.equals("completed.inProgress") || status.equals("inProgress.completed") || status.isEmpty() ? null : status);
-        System.out.println("course name >>> " + courseName);
+        if (courseName.isEmpty()) {
+             pageable = PageRequest.of(page, perPage, Sort.by("enrolledAt").descending());
+        }
+        status = status == null ? null : (status.equals("completed.inProgress") || status.equals("inProgress.completed")  || status.isEmpty() ? null : status);
+
 
         return courseEnrollmentRepository.findMyCourse(Id, courseName, status, pageable);
     }

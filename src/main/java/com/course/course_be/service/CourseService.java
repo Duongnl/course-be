@@ -84,9 +84,11 @@ public class CourseService {
         return coursesPage.map(courseMapper::toCourseCardResponse);
     }
 
-    public Page<CourseCardResponse> filterCourse(String sort, String category, String keyword, int page, int size) {
+    public Page<CourseCardResponse> filterCourse(String sort, String category, String keyword, Integer page, Integer size) {
 
         Page<Course> PageCourse = null;
+        page = page == null ? 0 : page - 1;
+        size = size == null ? 12 : size;
         Pageable pageable = PageRequest.of(page, size);
         if (keyword == null) {
             keyword = "";

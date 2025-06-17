@@ -109,12 +109,13 @@ public class AccountController {
     @GetMapping("/my-course")
     public ApiResponse<List<MyCourseResponse>> getMyCourse(
             @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer perPage,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String status
 
     ) {
 
-        Page<MyCourseResponse> courseProgressPage = courseEnrollmentService.getMyCourse(page, name, status);
+        Page<MyCourseResponse> courseProgressPage = courseEnrollmentService.getMyCourse(page,perPage, name, status);
         return ApiResponse.<List<MyCourseResponse>>builder()
                 .result(courseProgressPage.stream().toList())
                 .totalPages(courseProgressPage.getTotalPages())

@@ -94,6 +94,7 @@ public interface CourseRepository extends JpaRepository<Course, String> {
                 SELECT c FROM Course c
                 LEFT JOIN c.courseEnrollments ce
                 WHERE c.status = 'active'
+                  AND c.category.status = 'active'
                   AND LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
                   AND (:categoryId IS NULL OR c.category.id = :categoryId)
                 GROUP BY c
@@ -106,6 +107,7 @@ public interface CourseRepository extends JpaRepository<Course, String> {
     @Query("""
                 SELECT c FROM Course c
                 WHERE c.status = 'active'
+                  AND c.category.status = 'active'
                   AND LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
                   AND (:categoryId IS NULL OR c.category.id = :categoryId)
                 ORDER BY c.createdAt DESC
@@ -117,6 +119,7 @@ public interface CourseRepository extends JpaRepository<Course, String> {
     @Query("""
                 SELECT c FROM Course c
                 WHERE c.status = 'active'
+                   AND c.category.status = 'active'
                   AND LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
                   AND (:categoryId IS NULL OR c.category.id = :categoryId)
             """)
