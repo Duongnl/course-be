@@ -42,7 +42,7 @@ public class CommentController {
             @RequestParam(required = true) String lessonId,
             @ModelAttribute CommentFilterRequest filterRequest
     ) {
-        Page<CommentResponse> page = commentService.getCommentsByLesson(filterRequest,lessonId);
+        Page<CommentResponse> page = commentService.getCommentsByLesson(filterRequest, lessonId);
 
         return ApiResponse.<List<CommentResponse>>builder()
                 .result(page.getContent())
@@ -57,7 +57,7 @@ public class CommentController {
             @RequestParam(required = true) String commentId,
             @ModelAttribute CommentFilterRequest commentFilterRequest
     ) {
-        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest,commentId,0);
+        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest, commentId, 0);
         return ApiResponse.<List<CommentResponse>>builder()
                 .result(commentPage.getContent())
                 .totalItems(commentPage.getTotalElements())
@@ -66,29 +66,29 @@ public class CommentController {
                 .build();
     }
 
-     @GetMapping("/course")
-     public ApiResponse<List<CommentResponse>> getCommentsByCourse(
-             @RequestParam(required = false) String courseId,
-             @RequestParam(required = false) LocalDateTime createdAt,
-             @ModelAttribute CommentFilterRequest commentFilterRequest
-     ) {
-         // dùng id để filter comment theo bài học, hoặc lesson chẳng hạn
+    @GetMapping("/course")
+    public ApiResponse<List<CommentResponse>> getCommentsByCourse(
+            @RequestParam(required = false) String courseId,
+            @RequestParam(required = false) LocalDateTime createdAt,
+            @ModelAttribute CommentFilterRequest commentFilterRequest
+    ) {
+        // dùng id để filter comment theo bài học, hoặc lesson chẳng hạn
 //         Page<CommentResponse> commentPage = commentService.getCommentsByCourse(commentFilterRequest,courseId);
-         Page<CommentResponse> commentPage = commentService.getCommentPageOfCourse( commentFilterRequest,courseId,createdAt);
-         return ApiResponse.<List<CommentResponse>>builder()
-                 .result((commentPage.getContent()))
-                 .totalItems(commentPage.getTotalElements())
-                 .currentPage(commentPage.getNumber())
-                 .totalPages(commentPage.getTotalPages())
-                 .build();
-     }
+        Page<CommentResponse> commentPage = commentService.getCommentPageOfCourse(commentFilterRequest, courseId, createdAt);
+        return ApiResponse.<List<CommentResponse>>builder()
+                .result((commentPage.getContent()))
+                .totalItems(commentPage.getTotalElements())
+                .currentPage(commentPage.getNumber())
+                .totalPages(commentPage.getTotalPages())
+                .build();
+    }
 
     @GetMapping("/course/reply")
     public ApiResponse<List<CommentResponse>> getCommentCourseReply(
             @RequestParam(required = true) String commentId,
             @ModelAttribute CommentFilterRequest commentFilterRequest
     ) {
-        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest,commentId,1);
+        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest, commentId, 1);
         return ApiResponse.<List<CommentResponse>>builder()
                 .result(commentPage.getContent())
                 .totalItems(commentPage.getTotalElements())
@@ -106,7 +106,7 @@ public class CommentController {
     }
 
     @PostMapping("")
-    public ApiResponse<CommentResponse> createComment(@RequestBody CommentCreateRequest request){
+    public ApiResponse<CommentResponse> createComment(@RequestBody CommentCreateRequest request) {
         return ApiResponse.<CommentResponse>builder()
                 .result(commentService.createComment(request))
                 .build();
