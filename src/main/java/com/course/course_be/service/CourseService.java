@@ -7,6 +7,7 @@ import com.course.course_be.dto.response.courseclient.CourseClientResponse;
 import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.entity.Category;
+import com.course.course_be.entity.Chapter;
 import com.course.course_be.entity.Course;
 import com.course.course_be.entity.Lesson;
 import com.course.course_be.exception.AppException;
@@ -24,10 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,11 +54,15 @@ public class CourseService {
 
     public CourseClientResponse getCourse(String id) {
         Course course = courseRepository.findByIdWithChaptersAndLessons(id).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
-        course.setChapters(course.getChapters().stream().filter(chapter -> "active".equals(chapter.getStatus())).collect(Collectors.toSet()));
+        course.setChapters(course.getChapters().stream()
+                .filter(chapter -> "active".equals(chapter.getStatus()))
+                .sorted(Comparator.comparing(Chapter::getChapterNumber)) // sắp xếp thủ công
+                .collect(Collectors.toCollection(LinkedHashSet::new)));
         course.getChapters().forEach(chapter -> {
             Set<Lesson> activeLessons = chapter.getLessons().stream()
                     .filter(lesson -> "active".equals(lesson.getStatus()))
-                            .collect(Collectors.toSet());
+                    .sorted(Comparator.comparing(Lesson::getLessonNumber)) // sắp xếp thủ công
+                    .collect(Collectors.toCollection(LinkedHashSet::new)); // giữ thứ tự
             chapter.setLessons(activeLessons);
         });
 

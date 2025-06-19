@@ -12,12 +12,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 
 public class LessonSidebarResponse {
-
     String id;
     String name;
     Integer lessonNumber;
     Integer duration;
     boolean viewed;
-
-
 }

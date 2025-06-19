@@ -17,7 +17,4 @@ public class CourseInfoResponse {
     String id;
     String name;
     List<ChapterSidebarResponse> chapters;
-
-
-
 }

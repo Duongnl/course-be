@@ -3,7 +3,7 @@ package com.course.course_be.dto.response.courseclient;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Set;
+import java.util.List;
 
 @Data
 @Builder
@@ -14,5 +14,5 @@ public class ChapterClientResponse {
     Integer id;
     String name;
     Integer chapterNumber;
-    Set<LessonClientResponse> lessons;
+    List<LessonClientResponse> lessons;
 }
