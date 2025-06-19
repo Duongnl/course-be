@@ -1,5 +1,6 @@
 package com.course.course_be.mapper;
 
+import com.course.course_be.dto.response.courseclient.LessonClientResponse;
 import com.course.course_be.dto.response.lesson.LessonResponse;
 import com.course.course_be.dto.response.lessonclient.LessonClientDetailResponse;
 import com.course.course_be.dto.response.lessonclient.LessonSidebarResponse;

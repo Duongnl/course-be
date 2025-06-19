@@ -1,18 +1,19 @@
 package com.course.course_be.service;
 
+import com.course.course_be.dto.response.lesson_progress.LessonProgressResponse;
 import com.course.course_be.entity.Account;
 import com.course.course_be.entity.Lesson;
 import com.course.course_be.entity.LessonProgress;
-import com.course.course_be.exception.AppException;
-import com.course.course_be.exception.CommentErrorCode;
-import com.course.course_be.exception.CourseErrorCode;
-import com.course.course_be.exception.LessonErrorCode;
+import com.course.course_be.exception.*;
+import com.course.course_be.mapper.LessonProgressMapper;
+import com.course.course_be.repository.CourseEnrollmentRepository;
 import com.course.course_be.repository.CourseRepository;
 import com.course.course_be.repository.LessonProgressRepository;
 import com.course.course_be.repository.LessonRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -23,10 +24,12 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class LessonProgressService {
 
+    LessonProgressMapper lessonProgressMapper;
     LessonProgressRepository lessonProgressRepository;
     CourseRepository courseRepository;
     AuthenticationService authenticationService;
     LessonRepository lessonRepository;
+    private final CourseEnrollmentRepository courseEnrollmentRepository;
 
     public void viewedLessonProgress (String lessonId) {
         var context = SecurityContextHolder.getContext();
@@ -53,5 +56,35 @@ public class LessonProgressService {
             lessonProgress.setViewedAt(LocalDateTime.now());
             lessonProgressRepository.save(lessonProgress);
         }
+    }
+
+    public LessonProgressResponse getLessonProgressLatestOfCourseForUser (String courseId) {
+        var context = SecurityContextHolder.getContext();
+        String accountId = context.getAuthentication().getName();
+        if(accountId == null) {
+            throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+        }
+        if(!courseEnrollmentRepository.checkIsEnrollmentCourse(courseId, accountId)){
+            throw new AppException(LessonProgressErrorCode.LESSON_PROGRESS_FORBIDDEN);
+        }
+        LessonProgress latest = lessonProgressRepository
+                .findLatestProgress(courseId, accountId, PageRequest.of(0, 1))
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        if (latest != null) {
+            return lessonProgressMapper.toLessonProgressResponse(latest);
+        }
+        // Nếu chưa có progress, tìm bài học đầu tiên của khóa học
+        Lesson firstLesson = lessonRepository
+                .findFirstLessonInCourse(courseId, PageRequest.of(0, 1))
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
+
+        return LessonProgressResponse.builder()
+                .lessonId(firstLesson.getId())
+                .build();
     }
 }

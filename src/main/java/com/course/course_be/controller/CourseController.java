@@ -4,6 +4,7 @@ import com.course.course_be.dto.request.course.CreateCourseRequest;
 import com.course.course_be.dto.request.course.UpdateCourseRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.course.CourseResponse;
+import com.course.course_be.dto.response.courseclient.CourseClientResponse;
 import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.service.CourseService;
@@ -79,5 +80,12 @@ public class CourseController {
         return ApiResponse.<String>builder()
                 .message("Course deleted successfully")
                 .build();
+    }
+
+    @GetMapping("{id}")
+    public ApiResponse<CourseClientResponse> getCourse(@PathVariable String id) {
+        return ApiResponse.<CourseClientResponse>builder().result(
+                courseService.getCourse(id)
+        ).build();
     }
 }
