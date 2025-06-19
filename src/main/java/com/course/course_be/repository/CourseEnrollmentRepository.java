@@ -85,8 +85,10 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             Pageable pageable
     );
 
-    Page<CourseEnrollment> findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusNot(
-            String accountName, String CourseName, String status, Pageable pageable);
+    Page<CourseEnrollment> findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCase(
+            String accountName, String CourseName, Pageable pageable);
+    Page<CourseEnrollment> findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusIn(
+            String accountName, String CourseName, List<String> statusList, Pageable pageable);
 
 //    Page<CourseEnrollment> findByCourse_IdAndParentCourseEnrollmentIsNullAndStatusNot(String course_id, String status, Pageable pageable);
 //

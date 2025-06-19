@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum CourseEnrollmentErrorCode implements  ErrorCode  {
-
+    COURSE_ENROLLMENT_NOT_FOUND("COURSE_ENROLLMENT_1","Course enrollment not found", HttpStatus.NOT_FOUND)
     ;
 
     CourseEnrollmentErrorCode(String code, String message, HttpStatus httpStatus) {

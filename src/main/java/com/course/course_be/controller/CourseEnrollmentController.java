@@ -1,6 +1,7 @@
 package com.course.course_be.controller;
 
-import com.course.course_be.dto.request.course.CourseEnrollmentAdminFilterRequest;
+import com.course.course_be.dto.request.course_enrollment.CourseEnrollmentAdminFilterRequest;
+import com.course.course_be.dto.request.course_enrollment.CourseEnrollmentAdminCreateRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.course.CourseEnrollmentAdminResponse;
 import com.course.course_be.dto.response.homeclient.CourseEnrollCardResponse;
@@ -9,10 +10,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -39,6 +37,13 @@ public class CourseEnrollmentController {
                 .totalItems(courseEnrollmentPage.getTotalElements())
                 .currentPage(courseEnrollmentPage.getNumber())
                 .totalPages(courseEnrollmentPage.getTotalPages())
+                .build();
+    }
+
+    @PostMapping
+    public ApiResponse<CourseEnrollmentAdminResponse> createCourseEnrollment(@RequestBody CourseEnrollmentAdminCreateRequest request){
+        return ApiResponse.<CourseEnrollmentAdminResponse>builder()
+                .result(courseEnrollmentService.create(request))
                 .build();
     }
 }
