@@ -337,7 +337,8 @@ public class AuthenticationService {
                 throw new AppException(AuthErrorCode.UNAUTHENTICATED);
             }
             else {
-                Account account = getMyAccountCurrent();
+                Account account =  accountRepository.findById(getIdFromToken(token)).orElseThrow(()
+                        -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND));
                 if(!account.getStatus().equals("active")) {
                     throw new AppException(AuthErrorCode.UNAUTHENTICATED);
                 }
