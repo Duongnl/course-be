@@ -139,7 +139,7 @@ public interface CourseRepository extends JpaRepository<Course, String> {
     @Query("""
     SELECT DISTINCT c FROM Course c
     LEFT JOIN FETCH c.chapters ch
-    LEFT JOIN FETCH ch.lessons l
+    JOIN FETCH ch.lessons l
     WHERE c.id = :id
       AND c.status = 'active'
 """)
