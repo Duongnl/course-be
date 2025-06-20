@@ -69,7 +69,7 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             LEFT JOIN c.chapters ch
             LEFT JOIN ch.lessons l
             LEFT JOIN l.lessonProgresses lp ON lp.account.id = :accountId
-            WHERE ce.account.id = :accountId
+            WHERE ce.account.id = :accountId AND ce.status = 'active'
               AND (LOWER(c.name) LIKE LOWER(CONCAT('%', :courseName, '%')))
             GROUP BY c.id, c.name, ce.enrolledAt, c.imageUrl
             HAVING (
