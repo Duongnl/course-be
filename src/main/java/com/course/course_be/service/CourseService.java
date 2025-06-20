@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -53,33 +54,26 @@ public class CourseService {
     }
 
     public CourseClientResponse getCourse(String id) {
-        Course course = courseRepository.findByIdWithChaptersAndLessons(id).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
-        course.setChapters(course.getChapters().stream()
-                .filter(Objects::nonNull)
-                .filter(chapter -> "active".equals(chapter.getStatus()))
-                .sorted(Comparator.comparing(Chapter::getChapterNumber)) // sắp xếp thủ công
-                .collect(Collectors.toCollection(LinkedHashSet::new)));
-        course.getChapters().forEach(chapter -> {
-            Set<Lesson> activeLessons = chapter.getLessons().stream()
-                    .filter(Objects::nonNull)
-                    .filter(lesson -> "active".equals(lesson.getStatus()))
-                    .sorted(Comparator.comparing(Lesson::getLessonNumber)) // sắp xếp thủ công
-                    .collect(Collectors.toCollection(LinkedHashSet::new)); // giữ thứ tự
-            chapter.setLessons(activeLessons);
-        });
-
+        Course course = courseRepository.findByIdWithChaptersAndLessons(id)
+                .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+        // Map sang response DTO
         CourseClientResponse response = courseMapper.toCourseClientResponse(course);
-        int totalLessons = course.getChapters().stream().filter(Objects::nonNull)
-                .mapToInt(ch -> ch.getLessons().size())
+
+        // Tính tổng số bài học
+        int totalLessons = course.getChapters().stream()
+                .mapToInt(ch -> ch.getLessons() != null ? ch.getLessons().size() : 0)
                 .sum();
 
+        // Tính tổng thời lượng
         int totalDuration = course.getChapters().stream()
-                .flatMap(ch -> ch.getLessons().stream().filter(Objects::nonNull))
-                .mapToInt(Lesson::getDuration)
+                .flatMap(ch -> ch.getLessons() != null ? ch.getLessons().stream() : Stream.empty())
+                .filter(Objects::nonNull)
+                .mapToInt(lesson -> lesson.getDuration() != null ? lesson.getDuration() : 0)
                 .sum();
 
         response.setTotalLessons(totalLessons);
         response.setTotalDuration(totalDuration);
+
         return response;
     }
 
