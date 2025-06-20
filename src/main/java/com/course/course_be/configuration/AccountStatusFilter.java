@@ -32,28 +32,25 @@ public class AccountStatusFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         System.out.println("authentication >>> " + authentication);
-        if (authentication != null && authentication.isAuthenticated()) {
+        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof Jwt) {
             String accountId = authentication.getName();
             if (accountId != null) {
                 Optional<Account> account = accountRepository.findById(accountId);
                 if (account.isPresent()) {
                     if (!account.get().getStatus().equals("active")) {
-                        jwtAuthenticationEntryPoint.commence(request, response,
-                                new AuthenticationException("Account is not active") {
-                                });
+                        jwtAuthenticationEntryPoint.commence(request, response, new AuthenticationException("Account is not active") {
+                        });
                         return; // dừng filter chain, trả về lỗi ngay
                     }
                 } else {
-                    jwtAuthenticationEntryPoint.commence(request, response,
-                            new AuthenticationException("Account is not active") {
-                            });
+                    jwtAuthenticationEntryPoint.commence(request, response, new AuthenticationException("Account is not active") {
+                    });
                     return; // dừng filter chain, trả về lỗi ngay
                 }
 
             } else {
-                jwtAuthenticationEntryPoint.commence(request, response,
-                        new AuthenticationException("Account is not active") {
-                        });
+                jwtAuthenticationEntryPoint.commence(request, response, new AuthenticationException("Account is not active") {
+                });
                 return; // dừng filter chain, trả về lỗi ngay
             }
         }
