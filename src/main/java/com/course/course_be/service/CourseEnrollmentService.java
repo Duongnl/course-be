@@ -1,13 +1,17 @@
 package com.course.course_be.service;
 
+import com.course.course_be.dto.request.course_enrollment.ChangeStatusRequest;
 import com.course.course_be.dto.request.course_enrollment.RegisterCourseClient;
+import com.course.course_be.dto.request.course_enrollment.CourseEnrollmentAdminCreateRequest;
 import com.course.course_be.dto.response.account.CourseProgressResponse;
 import com.course.course_be.dto.response.account.MyCourseResponse;
-import com.course.course_be.dto.request.course.CourseEnrollmentAdminFilterRequest;
+import com.course.course_be.dto.request.course_enrollment.CourseEnrollmentAdminFilterRequest;
+import com.course.course_be.dto.response.comment.CommentAdminResponse;
 import com.course.course_be.dto.response.course.CourseEnrollmentAdminResponse;
 import com.course.course_be.dto.response.course_enrollment.CourseEnrollmentResponse;
 import com.course.course_be.dto.response.homeclient.CourseEnrollCardResponse;
 import com.course.course_be.entity.Account;
+import com.course.course_be.entity.Comment;
 import com.course.course_be.entity.Course;
 import com.course.course_be.entity.CourseEnrollment;
 import com.course.course_be.exception.AppException;
@@ -28,12 +32,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.course.course_be.exception.CommentErrorCode.COMMENT_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +65,17 @@ public class CourseEnrollmentService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public CourseEnrollmentAdminResponse changeStatus(ChangeStatusRequest request) {
+        CourseEnrollment courseEnrollment = courseEnrollmentRepository
+                .findById(request.getCourseEnrollmentId())
+                .orElseThrow(() -> new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_NOT_FOUND));
+
+        // Cập nhật status
+        if(!Objects.equals(courseEnrollment.getStatus(), request.getStatus()))
+            courseEnrollment.setStatus(request.getStatus());
+        return courseEnrollmentMapper.toCourseEnrollmentAdminResponse(courseEnrollment);
+    }
 
     public Page<CourseProgressResponse> getCourseProgress(String id,
                                                           Integer page,
@@ -78,11 +94,11 @@ public class CourseEnrollmentService {
         return courseEnrollmentRepository.findCourseProgress(id, courseName, status, pageable);
     }
 
-    public Page<MyCourseResponse> getMyCourse (
-                                                            Integer page,
-                                                            Integer perPage,
-                                                            String courseName,
-                                                            String status) {
+    public Page<MyCourseResponse> getMyCourse(
+            Integer page,
+            Integer perPage,
+            String courseName,
+            String status) {
 
         var context = SecurityContextHolder.getContext();
         String Id = context.getAuthentication().getName();
@@ -93,9 +109,9 @@ public class CourseEnrollmentService {
 
         courseName = courseName == null ? "" : courseName;
         if (courseName.isEmpty()) {
-             pageable = PageRequest.of(page, perPage, Sort.by("enrolledAt").descending());
+            pageable = PageRequest.of(page, perPage, Sort.by("enrolledAt").descending());
         }
-        status = status == null ? null : (status.equals("completed.inProgress") || status.equals("inProgress.completed")  || status.isEmpty() ? null : status);
+        status = status == null ? null : (status.equals("completed.inProgress") || status.equals("inProgress.completed") || status.isEmpty() ? null : status);
 
 
         return courseEnrollmentRepository.findMyCourse(Id, courseName, status, pageable);
@@ -108,9 +124,18 @@ public class CourseEnrollmentService {
         String accountName = Optional.ofNullable(request.getAccountName()).orElse("");
         String courseName = Optional.ofNullable(request.getCourseName()).orElse("");
 
-        Page<CourseEnrollment> courseEnrollmentPage = courseEnrollmentRepository
-                .findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusNot(
-                        accountName, courseName, "inactive", pageable);
+        Page<CourseEnrollment> courseEnrollmentPage;
+
+        String StatusString = request.getStatus();
+        if (StatusString == null || StatusString.isEmpty()) {
+            courseEnrollmentPage = courseEnrollmentRepository
+                    .findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCase(
+                            accountName, courseName, pageable);
+        } else {
+            List<String> statusList = Arrays.asList(StatusString.split("\\."));
+            courseEnrollmentPage = courseEnrollmentRepository.findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusIn(
+                    accountName, courseName, statusList, pageable);
+        }
 
         return courseEnrollmentPage.map(
                 courseEnrollmentMapper::toCourseEnrollmentAdminResponse);
@@ -166,4 +191,30 @@ public class CourseEnrollmentService {
             courseEnrollmentRepository.save(existCourseEnrollment);
         }
     }
+
+    @Transactional
+    public CourseEnrollmentAdminResponse create(CourseEnrollmentAdminCreateRequest request) {
+        // 1. Tìm khóa học
+        Course course = courseRepository.findById(request.getCourseId())
+                .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+
+        // 2. Tìm tài khoản
+        Account account = accountRepository.findById(request.getAccountId())
+                .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+
+        // 3. Tạo bản ghi enrollment
+        CourseEnrollment courseEnrollment = CourseEnrollment.builder()
+                .account(account)
+                .course(course)
+                .enrolledAt(LocalDateTime.now())
+                .status("active")
+                .build();
+
+        courseEnrollmentRepository.save(courseEnrollment);
+
+        // 4. Trả response
+        return courseEnrollmentMapper.toCourseEnrollmentAdminResponse(courseEnrollment);
+    }
+
+
 }

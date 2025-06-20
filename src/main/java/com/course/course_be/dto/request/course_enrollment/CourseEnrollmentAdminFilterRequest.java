@@ -1,4 +1,4 @@
-package com.course.course_be.dto.request.course;
+package com.course.course_be.dto.request.course_enrollment;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -8,7 +8,9 @@ import lombok.Setter;
 public class CourseEnrollmentAdminFilterRequest {
     String accountName;
     String courseName;
+    String status;
     int page = 0;
+
 
     @Setter(AccessLevel.NONE)
     int perPage = 10;

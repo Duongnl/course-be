@@ -1,8 +1,11 @@
 package com.course.course_be.controller;
 
-import com.course.course_be.dto.request.course.CourseEnrollmentAdminFilterRequest;
+import com.course.course_be.dto.request.course_enrollment.ChangeStatusRequest;
+import com.course.course_be.dto.request.course_enrollment.CourseEnrollmentAdminFilterRequest;
+import com.course.course_be.dto.request.course_enrollment.CourseEnrollmentAdminCreateRequest;
 import com.course.course_be.dto.request.course_enrollment.RegisterCourseClient;
 import com.course.course_be.dto.response.ApiResponse;
+import com.course.course_be.dto.response.comment.CommentAdminResponse;
 import com.course.course_be.dto.response.course.CourseEnrollmentAdminResponse;
 import com.course.course_be.dto.response.course_enrollment.CourseEnrollmentResponse;
 import com.course.course_be.dto.response.homeclient.CourseEnrollCardResponse;
@@ -42,6 +45,13 @@ public class CourseEnrollmentController {
                 .build();
     }
 
+    @PutMapping("/change-status-admin")
+    public ApiResponse<CourseEnrollmentAdminResponse> changeStatus(@RequestBody ChangeStatusRequest changeStatusRequest) {
+        return ApiResponse.<CourseEnrollmentAdminResponse>builder()
+                .result(courseEnrollmentService.changeStatus(changeStatusRequest))
+                .build();
+    }
+
     @GetMapping("/of-account/{courseId}")
     public ApiResponse<CourseEnrollmentResponse> getCourseEnrollment(@PathVariable String courseId) {
         return ApiResponse.<CourseEnrollmentResponse>builder().result(courseEnrollmentService.getCourseEnrollmentRegister(courseId)).build();
@@ -58,5 +68,12 @@ public class CourseEnrollmentController {
     public ApiResponse<String> cancelCourseRegister(@PathVariable String courseId) {
         courseEnrollmentService.cancelRegisterCourse(courseId);
         return ApiResponse.<String>builder().result("success").build();
+    }
+
+    @PostMapping("/create")
+    public ApiResponse<CourseEnrollmentAdminResponse> createCourseEnrollment(@RequestBody CourseEnrollmentAdminCreateRequest request){
+        return ApiResponse.<CourseEnrollmentAdminResponse>builder()
+                .result(courseEnrollmentService.create(request))
+                .build();
     }
 }
