@@ -27,3 +27,7 @@ jwt:
   refreshTokenSecret: "${REFRESH_TOKEN_SECRET}"
 
 allowed: "${ALLOWED_ORIGIN}"
+
+logging:
+  level:
+    org.springframework.security: DEBUG
