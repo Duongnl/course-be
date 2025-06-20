@@ -55,11 +55,13 @@ public class CourseService {
     public CourseClientResponse getCourse(String id) {
         Course course = courseRepository.findByIdWithChaptersAndLessons(id).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
         course.setChapters(course.getChapters().stream()
+                .filter(Objects::nonNull)
                 .filter(chapter -> "active".equals(chapter.getStatus()))
                 .sorted(Comparator.comparing(Chapter::getChapterNumber)) // sắp xếp thủ công
                 .collect(Collectors.toCollection(LinkedHashSet::new)));
         course.getChapters().forEach(chapter -> {
             Set<Lesson> activeLessons = chapter.getLessons().stream()
+                    .filter(Objects::nonNull)
                     .filter(lesson -> "active".equals(lesson.getStatus()))
                     .sorted(Comparator.comparing(Lesson::getLessonNumber)) // sắp xếp thủ công
                     .collect(Collectors.toCollection(LinkedHashSet::new)); // giữ thứ tự
@@ -67,12 +69,12 @@ public class CourseService {
         });
 
         CourseClientResponse response = courseMapper.toCourseClientResponse(course);
-        int totalLessons = course.getChapters().stream()
+        int totalLessons = course.getChapters().stream().filter(Objects::nonNull)
                 .mapToInt(ch -> ch.getLessons().size())
                 .sum();
 
         int totalDuration = course.getChapters().stream()
-                .flatMap(ch -> ch.getLessons().stream())
+                .flatMap(ch -> ch.getLessons().stream().filter(Objects::nonNull))
                 .mapToInt(Lesson::getDuration)
                 .sum();
 
