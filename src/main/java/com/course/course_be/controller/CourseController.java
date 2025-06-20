@@ -82,7 +82,7 @@ public class CourseController {
                 .build();
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ApiResponse<CourseClientResponse> getCourse(@PathVariable String id) {
         return ApiResponse.<CourseClientResponse>builder().result(
                 courseService.getCourse(id)
