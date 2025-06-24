@@ -5,12 +5,15 @@ import com.course.course_be.dto.request.account.UpdateAccountRequest;
 import com.course.course_be.dto.request.account.UpdatePasswordRequest;
 import com.course.course_be.dto.response.account.AccountResponse;
 import com.course.course_be.dto.response.account.CurrentAccountResponse;
+import com.course.course_be.dto.response.course_enrollment.CourseEnrollmentResponse;
 import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.entity.Account;
+import com.course.course_be.entity.CourseEnrollment;
 import com.course.course_be.entity.Profile;
 import com.course.course_be.exception.AccountErrorCode;
 import com.course.course_be.exception.AppException;
 import com.course.course_be.mapper.AccountMapper;
+import com.course.course_be.mapper.CourseEnrollmentMapper;
 import com.course.course_be.repository.AccountRepository;
 import com.course.course_be.repository.CourseEnrollmentRepository;
 import lombok.AccessLevel;
@@ -26,6 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
@@ -37,6 +43,7 @@ public class AccountService {
     AuthenticationService authenticationService;
     AccountMapper accountMapper;
     CourseEnrollmentRepository courseEnrollmentRepository;
+    CourseEnrollmentMapper courseEnrollmentMapper;
 
     public CurrentAccountResponse getCurrentAccount() {
         Account account= authenticationService.getMyAccountCurrent();
@@ -204,6 +211,23 @@ public class AccountService {
                 .value(courseEnrollmentRepository.countActiveAccountsEnrolled())
                 .total(accountRepository.countByStatus("active"))
                 .build();
+    }
+
+    public List<CourseEnrollmentResponse> getCurrentAccountCourseEnrollments(String status) {
+        Account account = authenticationService.getMyAccountCurrent();
+
+        Set<CourseEnrollment> courseEnrollments = account.getCourseEnrollments();
+
+        Stream<CourseEnrollment> enrollmentStream = courseEnrollments.stream();
+
+        // Filter theo status nếu có
+        if (status != null && !status.isEmpty()) {
+            enrollmentStream = enrollmentStream.filter(e -> status.equals(e.getStatus()));
+        }
+
+        return enrollmentStream
+                .map(courseEnrollmentMapper::toCourseEnrollmentResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional

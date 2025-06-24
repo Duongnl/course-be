@@ -16,11 +16,13 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProfileUpdateRequest {
+
     @NotBlank(message = "NOT_BLANK")
     @Size(max = 255, message = "Name must not exceed 255 characters")
     String name;
 
-    @Size(max = 20, message = "Phone number must not exceed 20 characters")
+    @NotBlank(message = "Phone number must not be blank")
+    @Size(max = 11, message = "Phone number must not exceed 11 characters")
     @Pattern(regexp = "^[0-9]*$", message = "Phone number must contain only digits")
     String phoneNumber;
 
@@ -34,3 +36,4 @@ public class ProfileUpdateRequest {
     @Pattern(regexp = "^(MALE|FEMALE|OTHER)?$", message = "Sex must be MALE, FEMALE, or OTHER")
     String sex;
 }
+

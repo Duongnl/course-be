@@ -6,6 +6,7 @@ import com.course.course_be.dto.request.account.UpdatePasswordRequest;
 import com.course.course_be.dto.request.profile.ProfileUpdateRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.account.*;
+import com.course.course_be.dto.response.course_enrollment.CourseEnrollmentResponse;
 import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.dto.response.profile.UserProfileResponse;
 import com.course.course_be.entity.Account;
@@ -119,6 +120,14 @@ public class AccountController {
         return ApiResponse.<List<MyCourseResponse>>builder()
                 .result(courseProgressPage.stream().toList())
                 .totalPages(courseProgressPage.getTotalPages())
+                .build();
+    }
+
+    @GetMapping("/current-account/course-enrollments")
+    public ApiResponse<List<CourseEnrollmentResponse>> getCurrentAccountCourseEnrollments(
+            @RequestParam(required = false) String status) {
+        return ApiResponse.<List<CourseEnrollmentResponse>>builder()
+                .result(accountService.getCurrentAccountCourseEnrollments(status))
                 .build();
     }
 
