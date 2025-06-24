@@ -56,6 +56,19 @@ public class CourseService {
     public CourseClientResponse getCourse(String id) {
         Course course = courseRepository.findByIdWithChaptersAndLessons(id)
                 .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+        course.setChapters(
+                course.getChapters().stream()
+                        .filter(ch -> "active".equals(ch.getStatus()))
+                        .sorted(Comparator.comparing(Chapter::getChapterNumber))
+                        .peek(ch -> ch.setLessons(
+                                ch.getLessons().stream()
+                                        .filter(lesson -> "active".equals(lesson.getStatus()))
+                                        .sorted(Comparator.comparing(Lesson::getLessonNumber))
+                                        .collect(Collectors.toCollection(LinkedHashSet::new)) // giữ thứ tự cho Set
+                        ))
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
+        );
+
         // Map sang response DTO
         CourseClientResponse response = courseMapper.toCourseClientResponse(course);
 
@@ -129,7 +142,7 @@ public class CourseService {
     }
 
 
-    public CourseResponse createNew(CreateCourseRequest request){
+    public CourseResponse createNew(CreateCourseRequest request) {
         Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new AppException(CategoryErrorCode.CATEGORY_NOT_FOUND));
         Course course = Course.builder()
                 .name(request.getName())
@@ -145,7 +158,7 @@ public class CourseService {
         return courseMapper.toCourseResponse(savedCourse);
     }
 
-    public CourseResponse update(String id, UpdateCourseRequest request){
+    public CourseResponse update(String id, UpdateCourseRequest request) {
         Course course = courseRepository.findById(id).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
         Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new AppException(CategoryErrorCode.CATEGORY_NOT_FOUND));
         course.setName(request.getName());
@@ -159,13 +172,13 @@ public class CourseService {
         return courseMapper.toCourseResponse(courseRepository.save(course));
     }
 
-    public void delete(String id){
+    public void delete(String id) {
         Course course = courseRepository.findById(id).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
         course.setStatus("deleted");
         courseRepository.save(course);
     }
 
-    public  CountResponse countCourse  () {
+    public CountResponse countCourse() {
         return CountResponse.builder()
                 .name("course")
                 .value(courseRepository.countByStatus("active"))
