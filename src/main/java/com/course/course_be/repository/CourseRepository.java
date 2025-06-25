@@ -27,7 +27,7 @@ public interface CourseRepository extends JpaRepository<Course, String> {
                     JOIN FETCH c.chapters ch
                     JOIN FETCH ch.lessons l
                     JOIN CourseEnrollment ce ON ce.course = c
-                    WHERE  c.status = 'active' AND c.id = (
+                    WHERE ce.status = 'active' AND c.status = 'active' AND  c.id = (
                         SELECT c2.id FROM Course c2
                         JOIN c2.chapters ch2
                         JOIN ch2.lessons l2
@@ -62,7 +62,7 @@ public interface CourseRepository extends JpaRepository<Course, String> {
                         JOIN c.chapters ch
                         JOIN ch.lessons l
                         JOIN CourseEnrollment ce ON ce.course = c
-                        WHERE l.id = :lessonId AND ce.account.id = :accountId
+                        WHERE l.id = :lessonId AND ce.account.id = :accountId AND ce.status = 'active'
                     ) THEN true ELSE false
                 END
             """)
@@ -94,7 +94,6 @@ public interface CourseRepository extends JpaRepository<Course, String> {
                 SELECT c FROM Course c
                 LEFT JOIN c.courseEnrollments ce
                 WHERE c.status = 'active'
-                  AND c.category.status = 'active'
                   AND LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
                   AND (:categoryId IS NULL OR c.category.id = :categoryId)
                 GROUP BY c
@@ -107,7 +106,6 @@ public interface CourseRepository extends JpaRepository<Course, String> {
     @Query("""
                 SELECT c FROM Course c
                 WHERE c.status = 'active'
-                  AND c.category.status = 'active'
                   AND LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
                   AND (:categoryId IS NULL OR c.category.id = :categoryId)
                 ORDER BY c.createdAt DESC
@@ -119,7 +117,6 @@ public interface CourseRepository extends JpaRepository<Course, String> {
     @Query("""
                 SELECT c FROM Course c
                 WHERE c.status = 'active'
-                   AND c.category.status = 'active'
                   AND LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
                   AND (:categoryId IS NULL OR c.category.id = :categoryId)
             """)

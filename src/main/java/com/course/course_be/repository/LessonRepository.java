@@ -18,7 +18,7 @@ public interface LessonRepository extends JpaRepository<Lesson, String> {
     JOIN l.chapter ch
     JOIN ch.course c
     JOIN CourseEnrollment ce ON ce.course = c
-    WHERE l.id = :lessonId AND ce.account.id = :accountId
+    WHERE l.id = :lessonId AND ce.account.id = :accountId  AND ce.status = 'active'
 """)
     Optional<Lesson> findAuthorizedLessonById(
             @Param("lessonId") String lessonId,
