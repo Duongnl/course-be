@@ -27,7 +27,7 @@ public interface CourseRepository extends JpaRepository<Course, String> {
                     JOIN FETCH c.chapters ch
                     JOIN FETCH ch.lessons l
                     JOIN CourseEnrollment ce ON ce.course = c
-                    WHERE c.id = (
+                    WHERE  c.status = 'active' AND c.id = (
                         SELECT c2.id FROM Course c2
                         JOIN c2.chapters ch2
                         JOIN ch2.lessons l2
@@ -44,7 +44,7 @@ public interface CourseRepository extends JpaRepository<Course, String> {
     SELECT DISTINCT c FROM Course c
     JOIN FETCH c.chapters ch
     JOIN FETCH ch.lessons l
-    WHERE c.id = (
+    WHERE c.status = 'active' AND c.id = (
         SELECT c2.id FROM Course c2
         JOIN c2.chapters ch2
         JOIN ch2.lessons l2

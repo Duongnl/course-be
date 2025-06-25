@@ -22,11 +22,20 @@ spring:
             scope: openid,profile,email
             redirect-uri: "${GOOGLE_REDIRECT_URI}"
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 1GB       # hoặc 1024MB
+      max-request-size: 1GB
+
 jwt:
   accessTokenSecret: "${ACCESS_TOKEN_SECRET}"
   refreshTokenSecret: "${REFRESH_TOKEN_SECRET}"
 
 allowed: "${ALLOWED_ORIGIN}"
+
+video:
+  storage-path: "${STORAGE-PATH}"
 
 logging:
   level:
