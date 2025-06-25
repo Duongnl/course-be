@@ -69,7 +69,7 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             LEFT JOIN c.chapters ch
             LEFT JOIN ch.lessons l ON l.status = 'active'
             LEFT JOIN l.lessonProgresses lp ON lp.account.id = :accountId
-            WHERE ce.account.id = :accountId AND ce.status = 'active'
+            WHERE ce.account.id = :accountId AND ce.status = 'active' AND c.status = 'active'
               AND (LOWER(c.name) LIKE LOWER(CONCAT('%', :courseName, '%')))
             GROUP BY c.id, c.name, ce.enrolledAt, c.imageUrl
             HAVING (
@@ -77,7 +77,7 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
                 OR (:status = 'completed' AND COUNT(DISTINCT lp.id) = COUNT(DISTINCT l.id))
                 OR (:status = 'inProgress' AND COUNT(DISTINCT lp.id) <> COUNT(DISTINCT l.id))
             )
-          
+            
             """)
     Page<MyCourseResponse> findMyCourse(
             @Param("accountId") String accountId,
