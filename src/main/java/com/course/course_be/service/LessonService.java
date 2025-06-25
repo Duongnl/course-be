@@ -43,20 +43,19 @@ public class LessonService {
     ChapterRepository chapterRepository;
 
     public CourseInfoResponse getCourseInfo(String lessonId) {
-       Account account = authenticationService
-               .getMyAccountCurrent();
+        Account account = authenticationService
+                .getMyAccountCurrent();
         Course course = new Course();
-        System.out.println(" account >>> " + account.getStatus());
-       if (account.getRole().equals("ADMIN")) {
+        if (account.getRole().equals("ADMIN")) {
 
-           course = courseRepository.findCourseByLessonIdWithChaptersAndLessons(lessonId).
+            course = courseRepository.findCourseByLessonIdWithChaptersAndLessons(lessonId).
                     orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
-           System.out.println("course admin >>> " + course.getName());
-       } else {
-           course = courseRepository.findCourseByLessonIdWithChaptersAndLessonsAndAccountId(lessonId, account.getId() )
-                   .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
-           System.out.println("course client >>> " + course.getName());
-       }
+            System.out.println("course admin >>> " + course.getName());
+        } else {
+            course = courseRepository.findCourseByLessonIdWithChaptersAndLessonsAndAccountId(lessonId, account.getId())
+                    .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+            System.out.println("course client >>> " + course.getName());
+        }
         System.out.println("course >>> " + course.getName());
         CourseInfoResponse courseInfoResponse = courseMapper.toCourseInfoResponse(course);
 
@@ -74,19 +73,22 @@ public class LessonService {
         Set<String> viewedLessonIds = new HashSet<>(lessonProgressRepository.findViewedLessonIds(account.getId(), allLessonIds));
 
         for (Chapter chapterItem : course.getChapters()) {
-            ChapterSidebarResponse chapterSidebarResponse = chapterMapper.toChapterSidebarResponse(chapterItem);
-            chapterSidebarResponses.add(chapterSidebarResponse);
-            List<LessonSidebarResponse> lessonSidebars = new ArrayList<>();
+            if (chapterItem.getStatus().equals("active")) {
+                ChapterSidebarResponse chapterSidebarResponse = chapterMapper.toChapterSidebarResponse(chapterItem);
+                chapterSidebarResponses.add(chapterSidebarResponse);
+                List<LessonSidebarResponse> lessonSidebars = new ArrayList<>();
 
-            for (Lesson lessonItem : chapterItem.getLessons()) {
-                LessonSidebarResponse lessonSidebarResponse = lessonMapper.toLessonSidebarResponse(lessonItem);
-
-                lessonSidebarResponse.setViewed(viewedLessonIds.contains(lessonItem.getId()));
-
-                lessonSidebars.add(lessonSidebarResponse);
+                for (Lesson lessonItem : chapterItem.getLessons()) {
+                    if (lessonItem.getStatus().equals("active")) {
+                        LessonSidebarResponse lessonSidebarResponse = lessonMapper.toLessonSidebarResponse(lessonItem);
+                        lessonSidebarResponse.setViewed(viewedLessonIds.contains(lessonItem.getId()));
+                        lessonSidebars.add(lessonSidebarResponse);
+                    }
+                }
+                chapterSidebarResponse.setLessons(lessonSidebars);
             }
-            chapterSidebarResponse.setLessons(lessonSidebars);
         }
+
         courseInfoResponse.setChapters(chapterSidebarResponses);
 
         return courseInfoResponse;
@@ -104,18 +106,18 @@ public class LessonService {
         }
     }
 
-    public LessonClientDetailResponse getLesson (String lessonId) {
+    public LessonClientDetailResponse getLesson(String lessonId) {
         Account account = authenticationService.getMyAccountCurrent();
         Lesson lesson = new Lesson();
         if (account.getRole().equals("ADMIN")) {
             lesson = lessonRepository.findById(lessonId)
                     .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
         } else {
-            lesson = lessonRepository.findAuthorizedLessonById(lessonId,account.getId())
+            lesson = lessonRepository.findAuthorizedLessonById(lessonId, account.getId())
                     .orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
         }
 
-        LessonClientDetailResponse lessonClientDetailResponse =   lessonMapper.toLessonClientDetailResponse(lesson);
+        LessonClientDetailResponse lessonClientDetailResponse = lessonMapper.toLessonClientDetailResponse(lesson);
         Submission submission = submissionRepository.findByLessonIdAndAccountSubmitterId(lesson.getId(), account.getId());
 
         if (submission != null) {
@@ -137,7 +139,7 @@ public class LessonService {
         return page.map(lessonMapper::toLessonResponse);
     }
 
-    public LessonResponse createNew(CreateLessonRequest request)  {
+    public LessonResponse createNew(CreateLessonRequest request) {
         Chapter chapter = chapterRepository.findById(request.getChapterId()).orElseThrow(() -> new AppException(ChapterErrorCode.CHAPTER_NOT_FOUND));
         Lesson lesson = Lesson.builder()
                 .lessonNumber(request.getLessonNumber())
@@ -151,11 +153,11 @@ public class LessonService {
                 .createdAt(LocalDateTime.now())
                 .chapter(chapter)
                 .build();
-        Lesson savedLesson =lessonRepository.save(lesson);
+        Lesson savedLesson = lessonRepository.save(lesson);
         return lessonMapper.toLessonResponse(savedLesson);
     }
 
-    public LessonResponse update(String id, UpdateLessonRequest request)  {
+    public LessonResponse update(String id, UpdateLessonRequest request) {
         Lesson lesson = lessonRepository.findById(id).orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
         lesson.setLessonNumber(request.getLessonNumber());
         lesson.setName(request.getName());

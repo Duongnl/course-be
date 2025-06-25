@@ -32,6 +32,7 @@ public class SecurityConfig {
     private final String[] PUBLIC_ENDPOINTS = {"/auth/refresh", "/auth/google",  "/auth/introspect-refresh-token", "/auth/introspect-access-token", "/auth/login" };
     private final String[] PUBLIC_GET_ENDPOINTS = {
             "/course/*",
+            "/video/trailer/**",
             "/course/filter",
             "/course/hot" ,
             "/course/newest" ,
@@ -44,9 +45,7 @@ public class SecurityConfig {
     private String ACCESS_TOKEN_SECRET;
 
     @Value("${allowed}")
-    private String ALLOWED_ORIGIN  ;
-
-
+    private String ALLOWED_ORIGIN;
 
     @Autowired
     AccountStatusFilter accountStatusFilter;

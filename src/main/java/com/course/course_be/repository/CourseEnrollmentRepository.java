@@ -32,7 +32,7 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             FROM CourseEnrollment ce
             JOIN ce.course c
             LEFT JOIN c.chapters ch
-            LEFT JOIN ch.lessons l
+            LEFT JOIN ch.lessons l  ON l.status = 'active'
             LEFT JOIN l.lessonProgresses lp ON lp.account.id = :accountId
             WHERE ce.account.id = :accountId
               AND (LOWER(c.name) LIKE LOWER(CONCAT('%', :courseName, '%')))
@@ -67,7 +67,7 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             FROM CourseEnrollment ce
             JOIN ce.course c
             LEFT JOIN c.chapters ch
-            LEFT JOIN ch.lessons l
+            LEFT JOIN ch.lessons l ON l.status = 'active'
             LEFT JOIN l.lessonProgresses lp ON lp.account.id = :accountId
             WHERE ce.account.id = :accountId AND ce.status = 'active'
               AND (LOWER(c.name) LIKE LOWER(CONCAT('%', :courseName, '%')))
