@@ -6,6 +6,7 @@ import com.course.course_be.dto.request.account.UpdatePasswordRequest;
 import com.course.course_be.dto.request.profile.ProfileUpdateRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.account.*;
+import com.course.course_be.dto.response.course.CourseResponse;
 import com.course.course_be.dto.response.course_enrollment.CourseEnrollmentResponse;
 import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.dto.response.profile.UserProfileResponse;
@@ -124,10 +125,15 @@ public class AccountController {
     }
 
     @GetMapping("/current-account/course-enrollments")
-    public ApiResponse<List<CourseEnrollmentResponse>> getCurrentAccountCourseEnrollments(
-            @RequestParam(required = false) String status) {
-        return ApiResponse.<List<CourseEnrollmentResponse>>builder()
-                .result(accountService.getCurrentAccountCourseEnrollments(status))
+    public ApiResponse<List<CourseResponse>> getCurrentAccountCourseEnrollments(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer perPage,
+            @RequestParam(required = false) String name) {
+
+        Page<CourseResponse> courseResponsePage = accountService.getCurrentAccountCourseEnrollments(page, perPage, name);
+        return ApiResponse.<List<CourseResponse>>builder()
+                .result(courseResponsePage.stream().toList())
+                .totalPages(courseResponsePage.getTotalPages())
                 .build();
     }
 

@@ -122,4 +122,14 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
                                     @Param("accountId") String accountId);
 
     Optional<CourseEnrollment> findByAccountIdAndCourseId(String accountId, String courseId);
+
+    @Query("SELECT ce FROM CourseEnrollment ce " +
+                "WHERE ce.account.id = :accountId " +
+                "AND ce.status = 'pending' " +
+                "AND (:courseName = '' OR LOWER(ce.course.name) LIKE LOWER(CONCAT('%', :courseName, '%')))")
+    Page<CourseEnrollment> findPendingCourseEnrollments(
+                @Param("accountId") String accountId,
+                @Param("courseName") String courseName,
+                Pageable pageable);
+
 }

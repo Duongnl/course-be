@@ -5,6 +5,7 @@ import com.course.course_be.dto.request.account.UpdateAccountRequest;
 import com.course.course_be.dto.request.account.UpdatePasswordRequest;
 import com.course.course_be.dto.response.account.AccountResponse;
 import com.course.course_be.dto.response.account.CurrentAccountResponse;
+import com.course.course_be.dto.response.course.CourseResponse;
 import com.course.course_be.dto.response.course_enrollment.CourseEnrollmentResponse;
 import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.entity.Account;
@@ -14,6 +15,7 @@ import com.course.course_be.exception.AccountErrorCode;
 import com.course.course_be.exception.AppException;
 import com.course.course_be.mapper.AccountMapper;
 import com.course.course_be.mapper.CourseEnrollmentMapper;
+import com.course.course_be.mapper.CourseMapper;
 import com.course.course_be.repository.AccountRepository;
 import com.course.course_be.repository.CourseEnrollmentRepository;
 import lombok.AccessLevel;
@@ -22,6 +24,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +46,7 @@ public class AccountService {
     AuthenticationService authenticationService;
     AccountMapper accountMapper;
     CourseEnrollmentRepository courseEnrollmentRepository;
-    CourseEnrollmentMapper courseEnrollmentMapper;
+    CourseMapper courseMapper;
 
     public CurrentAccountResponse getCurrentAccount() {
         Account account= authenticationService.getMyAccountCurrent();
@@ -213,21 +216,31 @@ public class AccountService {
                 .build();
     }
 
-    public List<CourseEnrollmentResponse> getCurrentAccountCourseEnrollments(String status) {
+    public Page<CourseResponse> getCurrentAccountCourseEnrollments(
+            Integer page,
+            Integer perPage,
+            String courseName) {
+
         Account account = authenticationService.getMyAccountCurrent();
+        String accountId = account.getId();
 
-        Set<CourseEnrollment> courseEnrollments = account.getCourseEnrollments();
+        // Xử lý pagination parameters
+        page = page == null ? 0 : page - 1;
+        perPage = perPage == null ? 6 : perPage;
+        Pageable pageable = PageRequest.of(page, perPage);
 
-        Stream<CourseEnrollment> enrollmentStream = courseEnrollments.stream();
-
-        // Filter theo status nếu có
-        if (status != null && !status.isEmpty()) {
-            enrollmentStream = enrollmentStream.filter(e -> status.equals(e.getStatus()));
+        // Xử lý tên course để tìm kiếm
+        courseName = courseName == null ? "" : courseName;
+        if (courseName.isEmpty()) {
+            pageable = PageRequest.of(page, perPage, Sort.by("enrolledAt").descending());
         }
 
-        return enrollmentStream
-                .map(courseEnrollmentMapper::toCourseEnrollmentResponse)
-                .collect(Collectors.toList());
+        // Gọi repository method để lấy data với status = "pending"
+        Page<CourseEnrollment> enrollmentPage = courseEnrollmentRepository
+                .findPendingCourseEnrollments(accountId, courseName, pageable);
+
+        // Chuyển đổi từ Page<CourseEnrollment> sang Page<CourseResponse>
+        return enrollmentPage.map(enrollment -> courseMapper.toCourseResponse(enrollment.getCourse()));
     }
 
     @Transactional
