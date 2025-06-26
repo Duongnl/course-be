@@ -25,6 +25,5 @@ public class CreateCourseRequest {
     BigDecimal price;
     String imageUrl;
     String videoUrl;
-    @NotNull
     String categoryId;
 }

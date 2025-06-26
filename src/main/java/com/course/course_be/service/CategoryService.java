@@ -94,6 +94,11 @@ public class CategoryService {
     public void delete(String id) {
         Category category = categoryRepository.findById(id).orElseThrow(() -> new AppException(CategoryErrorCode.CATEGORY_NOT_FOUND));
         category.setStatus("deleted");
+        List<Course> courses = courseRepository.findByCategory(category);
+        for (Course course : courses) {
+            course.setCategory(null);
+        }
+        courseRepository.saveAll(courses);
         categoryRepository.save(category);
     }
 

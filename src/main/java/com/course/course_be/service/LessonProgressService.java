@@ -14,6 +14,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -68,7 +69,7 @@ public class LessonProgressService {
             throw new AppException(LessonProgressErrorCode.LESSON_PROGRESS_FORBIDDEN);
         }
         LessonProgress latest = lessonProgressRepository
-                .findLatestProgress(courseId, accountId, PageRequest.of(0, 1))
+                .findLatestProgress(courseId, accountId, PageRequest.of(0, 10))
                 .stream()
                 .findFirst()
                 .orElse(null);
@@ -78,7 +79,7 @@ public class LessonProgressService {
         }
         // Nếu chưa có progress, tìm bài học đầu tiên của khóa học
         Lesson firstLesson = lessonRepository
-                .findFirstLessonInCourse(courseId, PageRequest.of(0, 1))
+                .findFirstLessonInCourse(courseId, Pageable.unpaged())
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
