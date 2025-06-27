@@ -57,7 +57,7 @@ public class CommentController {
             @RequestParam(required = true) String commentId,
             @ModelAttribute CommentFilterRequest commentFilterRequest
     ) {
-        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest, commentId, 0);
+        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest, commentId);
         return ApiResponse.<List<CommentResponse>>builder()
                 .result(commentPage.getContent())
                 .totalItems(commentPage.getTotalElements())
@@ -88,7 +88,7 @@ public class CommentController {
             @RequestParam(required = true) String commentId,
             @ModelAttribute CommentFilterRequest commentFilterRequest
     ) {
-        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest, commentId, 1);
+        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest, commentId);
         return ApiResponse.<List<CommentResponse>>builder()
                 .result(commentPage.getContent())
                 .totalItems(commentPage.getTotalElements())
