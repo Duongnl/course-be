@@ -36,6 +36,8 @@ allowed: "${ALLOWED_ORIGIN}"
 
 video:
   storage-path: "${STORAGE-PATH}"
+
+document:
   document-path: "${DOCUMENT-PATH}"
 
 logging:
