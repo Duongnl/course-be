@@ -41,8 +41,12 @@ public interface LessonRepository extends JpaRepository<Lesson, String> {
                                 Pageable pageable);
     @Query("""
     SELECT l FROM Lesson l
-    JOIN l.chapter c
-    WHERE c.course.id = :courseId AND l.status = 'active' AND c.status = 'active'
+    JOIN l.chapter ch
+    JOIN ch.course c
+    WHERE c.id = :courseId
+      AND l.status = 'active'
+      AND ch.status = 'active'
+      AND c.status = 'active'
     ORDER BY l.lessonNumber ASC
 """)
     List<Lesson> findFirstLessonInCourse(@Param("courseId") String courseId, Pageable pageable);

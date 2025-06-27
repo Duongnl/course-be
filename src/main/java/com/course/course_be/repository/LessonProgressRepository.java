@@ -26,7 +26,7 @@ public interface LessonProgressRepository extends JpaRepository<LessonProgress, 
     JOIN ch.course c
     WHERE c.id = :courseId
       AND lp.account.id = :accountId
-      AND l.status = 'active' AND ch.status = 'active' AND c.status = 'active'
+      AND ch.status = 'active' AND c.status = 'active' AND l.status = 'active'
     ORDER BY lp.viewedAt DESC
 """)
     List<LessonProgress> findLatestProgress(

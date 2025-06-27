@@ -143,4 +143,6 @@ public interface CourseRepository extends JpaRepository<Course, String> {
     Optional<Course> findByIdWithChaptersAndLessons(@Param("id") String id);
     long countByStatus(String status);
     long countByStatusNot(String status);
+
+    List<Course> findByCategory(Category category);
 }
