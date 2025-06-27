@@ -10,6 +10,7 @@ import com.course.course_be.entity.Course;
 import com.course.course_be.entity.Lesson;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
@@ -20,4 +21,5 @@ public interface CourseMapper {
     public CourseCardResponse toCourseCardResponse(Course course);
     public CourseResponse toCourseResponse(Course course);
     CourseClientResponse toCourseClientResponse(Course course);
+
 }

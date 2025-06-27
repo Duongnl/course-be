@@ -47,6 +47,7 @@ public class AccountService {
     AccountMapper accountMapper;
     CourseEnrollmentRepository courseEnrollmentRepository;
     CourseMapper courseMapper;
+    CourseEnrollmentMapper courseEnrollmentMapper;
 
     public CurrentAccountResponse getCurrentAccount() {
         Account account= authenticationService.getMyAccountCurrent();
@@ -240,7 +241,7 @@ public class AccountService {
                 .findPendingCourseEnrollments(accountId, courseName, pageable);
 
         // Chuyển đổi từ Page<CourseEnrollment> sang Page<CourseResponse>
-        return enrollmentPage.map(enrollment -> courseMapper.toCourseResponse(enrollment.getCourse()));
+        return enrollmentPage.map(courseEnrollmentMapper::toCourseResponse);
     }
 
     @Transactional

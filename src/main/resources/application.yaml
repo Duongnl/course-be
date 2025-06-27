@@ -40,6 +40,9 @@ video:
 document:
   document-path: "${DOCUMENT-PATH}"
 
+image:
+  image-path: "${IMAGE-PATH}"
+
 logging:
   level:
     org.springframework.security: DEBUG

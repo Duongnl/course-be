@@ -162,8 +162,7 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
     @Query("""
         SELECT ce
         FROM CourseEnrollment ce
-        WHERE ce.account.id = :accountId
-          AND ce.status = 'pending'
+        WHERE ce.account.id = :accountId AND ce.status <> 'active' AND ce.status <> 'deleted'  AND ce.course.status = 'active'
           AND (:courseName = '' OR LOWER(ce.course.name) LIKE LOWER(CONCAT('%', :courseName, '%')))
     """)
     Page<CourseEnrollment> findPendingCourseEnrollments(

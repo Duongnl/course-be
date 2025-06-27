@@ -39,7 +39,8 @@ public class SecurityConfig {
             "/category/search/**" ,
             "/category",
             "/comment/course/reply",
-            "/comment/course"
+            "/comment/course",
+            "/image/view/**"
     };
     @Value("${jwt.accessTokenSecret}")
     private String ACCESS_TOKEN_SECRET;
