@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,7 +37,7 @@ public class VideoService {
             String originalFileName = StringUtils.cleanPath(
                     Objects.requireNonNull(file.getOriginalFilename())
             );
-
+            originalFileName = new String(originalFileName.getBytes("ISO-8859-1"), StandardCharsets.UTF_8);
             // Tách tên gốc và phần mở rộng
             String baseName = originalFileName;
             String extension = "";
