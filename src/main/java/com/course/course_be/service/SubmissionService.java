@@ -46,6 +46,18 @@ public class SubmissionService {
         Lesson lesson = lessonRepository.findAuthorizedLessonById(request.getLessonId(), account.getId())
                 .orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
 
+        if (!lesson.getStatus().equals("active")) {
+            throw new AppException(LessonErrorCode.LESSON_NOT_FOUND);
+        }
+
+        if (!lesson.getChapter().getStatus().equals("active")) {
+            throw new AppException(LessonErrorCode.LESSON_NOT_FOUND);
+        }
+
+        if (!lesson.getChapter().getCourse().getStatus().equals("active")) {
+            throw new AppException(LessonErrorCode.LESSON_NOT_FOUND);
+        }
+
         if (lesson.getAssignmentUrl() == null) {
             throw new AppException(SubmissionErrorCode.SUBMISSION_INVALID);
         }
