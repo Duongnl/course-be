@@ -25,7 +25,6 @@ public class UpdateCourseRequest {
     BigDecimal price;
     String imageUrl;
     String videoUrl;
-    @NotNull
     String categoryId;
     @NotNull
     String status = "active";

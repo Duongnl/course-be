@@ -143,14 +143,14 @@ public class CourseService {
 
 
     public CourseResponse createNew(CreateCourseRequest request) {
-        Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new AppException(CategoryErrorCode.CATEGORY_NOT_FOUND));
+        Category category = categoryRepository.findById(request.getCategoryId()).orElse(null);
         Course course = Course.builder()
                 .name(request.getName())
                 .detail(request.getDetail())
                 .price(request.getPrice())
                 .imageUrl(request.getImageUrl())
                 .videoUrl(request.getVideoUrl())
-                .status("active")
+                .status("inactive")
                 .createdAt(LocalDateTime.now())
                 .category(category)
                 .build();
@@ -160,7 +160,7 @@ public class CourseService {
 
     public CourseResponse update(String id, UpdateCourseRequest request) {
         Course course = courseRepository.findById(id).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
-        Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(() -> new AppException(CategoryErrorCode.CATEGORY_NOT_FOUND));
+        Category category = categoryRepository.findById(request.getCategoryId()).orElse(null);
         course.setName(request.getName());
         course.setDetail(request.getDetail());
         course.setPrice(request.getPrice());
