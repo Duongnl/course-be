@@ -39,6 +39,7 @@ public class VideoService {
                     Objects.requireNonNull(file.getOriginalFilename())
             );
             originalFileName = new String(originalFileName.getBytes("ISO-8859-1"), StandardCharsets.UTF_8);
+
             // Tách tên gốc và phần mở rộng
             String baseName = originalFileName;
             String extension = "";
@@ -53,21 +54,19 @@ public class VideoService {
             Path storageDir = Paths.get(STORAGE_PATH).toAbsolutePath().normalize();
             Files.createDirectories(storageDir);
 
-            // Tạo tên file mới nếu trùng
+            // Tạo đường dẫn đến file
             String finalFileName = baseName + extension;
             Path targetPath = storageDir.resolve(finalFileName);
-            int counter = 1;
 
-            while (Files.exists(targetPath)) {
-                finalFileName = baseName + "_" + counter + extension;
-                targetPath = storageDir.resolve(finalFileName);
-                counter++;
+            // Nếu file đã tồn tại thì trả về luôn tên file đó
+            if (Files.exists(targetPath)) {
+                System.out.println("File đã tồn tại, không lưu lại: " + finalFileName);
+                return finalFileName;
             }
 
-            // Ghi file
+            // Nếu chưa tồn tại, thì ghi file
             Files.copy(file.getInputStream(), targetPath);
-
-            System.out.println("Đã lưu file: " + finalFileName);
+            System.out.println("Đã lưu file mới: " + finalFileName);
             return finalFileName;
 
         } catch (IOException e) {
