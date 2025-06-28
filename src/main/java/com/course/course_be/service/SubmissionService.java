@@ -21,6 +21,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -83,6 +84,7 @@ public class SubmissionService {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<SubmissionAdminResponse> filterSubmissionAdmin(Integer page,
                                                           Integer perPage,
                                                           String courseName,
@@ -243,13 +245,14 @@ public class SubmissionService {
 
 
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     public void deletedSubmission(String submissionId) {
         Submission submission = submissionRepository.findById(submissionId).orElseThrow(() -> new AppException(SubmissionErrorCode.SUBMISSION_NOT_FOUND));
         submission.setStatus("deleted");
         submissionRepository.save(submission);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public void updateSubmission(String submissionId, GradedSubmissionRequest request) {
         Submission submission = submissionRepository.findById(submissionId).orElseThrow(() -> new AppException(SubmissionErrorCode.SUBMISSION_NOT_FOUND));
 

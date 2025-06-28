@@ -11,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class StatisticService {
     SubmissionService submissionService;
     CourseEnrollmentRepository courseEnrollmentRepository;
 
+    @PreAuthorize("hasRole('ADMIN')")
     public List<CountResponse> count () {
         List<CountResponse> list = new ArrayList<>();
 
@@ -39,6 +41,7 @@ public class StatisticService {
         return list;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<StatCourseEnrollResponse> findMostEnrolledCourses (Integer page, Integer  perPage)  {
         page = page == null ? 0 : page - 1;
         perPage = perPage == null ? 5 : perPage;
