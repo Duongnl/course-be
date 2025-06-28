@@ -28,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,6 +79,7 @@ public class CourseEnrollmentService {
     /**
      * Lấy tiến độ khóa học của 1 người dùng
      */
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<CourseProgressResponse> getCourseProgress(String accountId, Integer page, Integer perPage, String courseName, String status) {
         page = (page == null) ? 0 : page - 1;
         perPage = (perPage == null) ? 10 : perPage;

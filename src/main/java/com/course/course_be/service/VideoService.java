@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,7 +31,7 @@ public class VideoService {
     @Value("${video.storage-path}")
     private String STORAGE_PATH;
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     public String saveVideo(MultipartFile file) {
         try {
             // Làm sạch tên file
