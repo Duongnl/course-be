@@ -5,6 +5,7 @@ import com.course.course_be.dto.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -75,6 +76,22 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message(HttpStatus.BAD_REQUEST.getReasonPhrase())
                 .errors(errorResponses)
+                .build()
+        );
+    }
+
+    @ExceptionHandler(value = AccessDeniedException.class)
+    ResponseEntity<ApiResponse> handlingAccessDeniedException(AccessDeniedException exception){
+        List<ErrorResponse> apiResponseList = new ArrayList<>();
+        apiResponseList.add(ErrorResponse.builder()
+                .code(PermissionErrorCode.UNAUTHORIZED.getCode())
+                .message(PermissionErrorCode.UNAUTHORIZED.getMessage())
+                .build());
+
+        return  ResponseEntity.badRequest().body(ApiResponse.builder()
+                .status(HttpStatus.FORBIDDEN.value())
+                .message(HttpStatus.FORBIDDEN.getReasonPhrase())
+                .errors(apiResponseList)
                 .build()
         );
     }

@@ -10,6 +10,7 @@ import lombok.experimental.NonFinal;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.UrlResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,7 +34,7 @@ public class ImageService {
         return IMAGE_PATH;
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     public String uploadImage(MultipartFile file) {
         try {
             String originalFileName = file.getOriginalFilename();
