@@ -23,7 +23,7 @@ public class VideoController {
 
     @PostMapping("/upload")
     public ApiResponse<String> uploadVideo(@RequestParam("file") MultipartFile file) {
-        System.out.println("file name >>> " + file.getOriginalFilename());
+    
         String fileName = videoService.saveVideo(file);
         return ApiResponse.<String>builder()
         .result(fileName).

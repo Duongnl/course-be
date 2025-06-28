@@ -31,7 +31,7 @@ public class AccountStatusFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("authentication >>> " + authentication);
+      
         if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof Jwt) {
             String accountId = authentication.getName();
             if (accountId != null) {

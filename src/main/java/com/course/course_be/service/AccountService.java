@@ -107,7 +107,7 @@ public class AccountService {
         // Tạo Profile
         Profile profile = Profile.builder()
                 .name(request.getName())
-                .avatarUrl(request.getAvatarUrl())
+                .avatarUrl(request.getAvatarUrl().isEmpty() ? "https://res.cloudinary.com/moment-images/1_2_r15hh3" : request.getAvatarUrl())
                 .birthday(request.getBirthday() != null && !request.getBirthday().isEmpty()
                         ? LocalDate.parse(request.getBirthday())
                         : null) // Gán null nếu rỗng

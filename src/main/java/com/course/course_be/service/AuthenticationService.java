@@ -118,7 +118,7 @@ public class AuthenticationService {
 
 
             Account account = accountRepository.findByGoogleId(googleId);
-            System.out.println("account >>> " + account);
+  
 //            tk moi
             if (account == null) {
                 account   =   handleSaveNewAccount(userInfo);
@@ -308,7 +308,7 @@ public class AuthenticationService {
              return  true;
             }
         } catch (Exception e) {
-            System.out.println("error >>> " + e.getMessage());
+
             throw new AppException(AuthErrorCode.UNAUTHENTICATED);
         }
     }
