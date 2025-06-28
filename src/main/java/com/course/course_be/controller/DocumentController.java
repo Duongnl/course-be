@@ -25,7 +25,7 @@ public class DocumentController {
 
     @PostMapping("/upload")
     public ApiResponse<String> uploadVideo(@RequestParam("file") MultipartFile file) {
-        System.out.println("file name >>> " + file.getOriginalFilename());
+      
         String fileName = documentService.saveDocument(file);
         return ApiResponse.<String>builder()
                 .result(fileName).

@@ -60,13 +60,13 @@ public class VideoService {
 
             // Nếu file đã tồn tại thì trả về luôn tên file đó
             if (Files.exists(targetPath)) {
-                System.out.println("File đã tồn tại, không lưu lại: " + finalFileName);
+            
                 return finalFileName;
             }
 
             // Nếu chưa tồn tại, thì ghi file
             Files.copy(file.getInputStream(), targetPath);
-            System.out.println("Đã lưu file mới: " + finalFileName);
+
             return finalFileName;
 
         } catch (IOException e) {
@@ -80,7 +80,7 @@ public class VideoService {
 
     public void streamVideo(String fileName, String rangeHeader, HttpServletResponse response) throws IOException {
         Path videoPath = Paths.get(STORAGE_PATH).resolve(fileName).normalize();
-        System.out.println("Serving video file from path: " + videoPath.toAbsolutePath());
+   
 
 
         if (!Files.exists(videoPath)) {
@@ -109,8 +109,6 @@ public class VideoService {
         response.setHeader("Accept-Ranges", "bytes");
         response.setHeader("Content-Length", String.valueOf(contentLength));
         response.setHeader("Content-Range", String.format("bytes %d-%d/%d", start, end, fileSize));
-
-        System.out.println("Sending video bytes: start = " + start + ", end = " + end + ", total = " + fileSize);
 
         try (InputStream inputStream = Files.newInputStream(videoPath)) {
             inputStream.skip(start);

@@ -50,18 +50,18 @@ public class LessonService {
 
             course = courseRepository.findCourseByLessonIdWithChaptersAndLessons(lessonId).
                     orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
-            System.out.println("course admin >>> " + course.getName());
+       
         } else {
             course = courseRepository.findCourseByLessonIdWithChaptersAndLessonsAndAccountId(lessonId, account.getId())
                     .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
-            System.out.println("course client >>> " + course.getName());
+         
         }
-        System.out.println("course >>> " + course.getName());
+      
         CourseInfoResponse courseInfoResponse = courseMapper.toCourseInfoResponse(course);
 
         List<ChapterSidebarResponse> chapterSidebarResponses = new ArrayList<>();
 
-        System.out.println("size chapters >>> " + course.getChapters().size());
+      
 
         List<String> allLessonIds = new ArrayList<>();
         for (Chapter chapter : course.getChapters()) {
