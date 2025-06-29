@@ -65,6 +65,7 @@ public class CourseEnrollmentService {
     /**
      * Admin thay đổi trạng thái của một lượt đăng ký học
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public CourseEnrollmentAdminResponse changeStatus(ChangeStatusRequest request) {
         CourseEnrollment courseEnrollment = courseEnrollmentRepository.findById(request.getCourseEnrollmentId()).orElseThrow(() -> new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_NOT_FOUND));
@@ -111,6 +112,7 @@ public class CourseEnrollmentService {
     /**
      * Admin xem danh sách lượt đăng ký học (theo filter)
      */
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<CourseEnrollmentAdminResponse> getListCourseEnrollment(CourseEnrollmentAdminFilterRequest request) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getPerPage(), Sort.by(Sort.Direction.fromString(request.getOrder()), request.getSort()));
 
@@ -120,7 +122,7 @@ public class CourseEnrollmentService {
         Page<CourseEnrollment> courseEnrollmentPage;
 
         if (request.getStatus() == null || request.getStatus().isEmpty()) {
-            courseEnrollmentPage = courseEnrollmentRepository.findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCase(accountName, courseName, pageable);
+            courseEnrollmentPage = courseEnrollmentRepository.findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusNot(accountName, courseName, "deleted",pageable);
         } else {
             List<String> statusList = Arrays.asList(request.getStatus().split("\\."));
             courseEnrollmentPage = courseEnrollmentRepository.findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusIn(accountName, courseName, statusList, pageable);

@@ -98,8 +98,8 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
     /**
      * Admin tìm theo tên người dùng và tên khóa học (dạng LIKE)
      */
-    Page<CourseEnrollment> findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCase(
-            String accountName, String courseName, Pageable pageable
+    Page<CourseEnrollment> findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusNot(
+            String accountName, String courseName,String statusExclude, Pageable pageable
     );
 
     /**
