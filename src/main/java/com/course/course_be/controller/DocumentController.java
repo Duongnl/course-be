@@ -33,6 +33,40 @@ public class DocumentController {
     }
 
     @GetMapping("/download/{fileName}")
+    public ResponseEntity<Resource> download(@PathVariable String fileName) {
+
+        Resource resource = documentService.loadFileAsResource(fileName);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+
+    @GetMapping("/download/assignment/{fileName}")
+    public ResponseEntity<Resource> downloadAssignment(@PathVariable String fileName) {
+
+        Resource resource = documentService.loadAssignmentAsResource(fileName);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+    @GetMapping("/download/submission/{fileName}")
+    public ResponseEntity<Resource> downloadSubmission(@PathVariable String fileName) {
+
+        Resource resource = documentService.loadSubmissionAsResource(fileName);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+    @GetMapping("/download/document/{fileName}")
     public ResponseEntity<Resource> downloadDocument(@PathVariable String fileName) {
 
         Resource resource = documentService.loadDocumentAsResource(fileName);
@@ -42,5 +76,6 @@ public class DocumentController {
                         "attachment; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
     }
+
 
 }

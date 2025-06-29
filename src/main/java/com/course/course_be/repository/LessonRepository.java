@@ -14,15 +14,16 @@ import java.util.Optional;
 public interface LessonRepository extends JpaRepository<Lesson, String> {
 
     @Query("""
-    SELECT l FROM Lesson l
-    JOIN l.chapter ch
-    JOIN ch.course c
-    JOIN CourseEnrollment ce ON ce.course = c
-    WHERE l.id = :lessonId AND ce.account.id = :accountId  AND ce.status = 'active'
-""")
+                SELECT l FROM Lesson l
+                JOIN l.chapter ch
+                JOIN ch.course c
+                JOIN CourseEnrollment ce ON ce.course = c
+                WHERE l.id = :lessonId AND ce.account.id = :accountId  AND ce.status = 'active'
+            """)
     Optional<Lesson> findAuthorizedLessonById(
             @Param("lessonId") String lessonId,
             @Param("accountId") String accountId);
+
     @Query("""
                 SELECT l FROM Lesson l
                 WHERE (:name IS NULL OR :name = '' OR LOWER(l.name) LIKE LOWER(CONCAT('%', :name, '%')))
@@ -33,21 +34,80 @@ public interface LessonRepository extends JpaRepository<Lesson, String> {
                   )
                   AND (:chapterId IS NULL OR :chapterId = '' OR l.chapter.id = CAST(:chapterId AS integer) )
             """)
-    Page<Lesson> searchLessons( @Param("name") String name,
-                                @Param("detail") String detail,
-                                @Param("status") String status,
-                                @Param("statusList") List<String> statusList,
-                                @Param("chapterId") int chapterId,
-                                Pageable pageable);
+    Page<Lesson> searchLessons(@Param("name") String name,
+                               @Param("detail") String detail,
+                               @Param("status") String status,
+                               @Param("statusList") List<String> statusList,
+                               @Param("chapterId") int chapterId,
+                               Pageable pageable);
+
     @Query("""
-    SELECT l FROM Lesson l
-    JOIN l.chapter ch
-    JOIN ch.course c
-    WHERE c.id = :courseId
-      AND l.status = 'active'
-      AND ch.status = 'active'
-      AND c.status = 'active'
-    ORDER BY l.lessonNumber ASC
-""")
+                SELECT l FROM Lesson l
+                JOIN l.chapter ch
+                JOIN ch.course c
+                WHERE c.id = :courseId
+                  AND l.status = 'active'
+                  AND ch.status = 'active'
+                  AND c.status = 'active'
+                ORDER BY l.lessonNumber ASC
+            """)
     List<Lesson> findFirstLessonInCourse(@Param("courseId") String courseId, Pageable pageable);
+
+
+    @Query("""
+            SELECT COUNT(l) > 0 FROM Lesson l
+            JOIN l.chapter ch
+            JOIN ch.course c
+            JOIN CourseEnrollment ce ON ce.course = c
+            WHERE l.videoUrl = :videoUrl
+            AND l.status = 'active'
+            AND ch.status = 'active'
+            AND c.status = 'active'
+            AND ce.account.id = :accountId
+            AND ce.status = 'active'
+            AND ce.account.status = 'active'
+            """)
+    boolean existsAuthorizedLessonByVideoUrl(
+            @Param("videoUrl") String videoUrl,
+            @Param("accountId") String accountId
+    );
+
+
+    @Query("""
+            SELECT COUNT(l) > 0 FROM Lesson l
+            JOIN l.chapter ch
+            JOIN ch.course c
+            JOIN CourseEnrollment ce ON ce.course = c
+            WHERE l.assignmentUrl = :assignmentUrl
+            AND l.status = 'active'
+            AND ch.status = 'active'
+            AND c.status = 'active'
+            AND ce.account.id = :accountId
+            AND ce.status = 'active'
+            AND ce.account.status = 'active'
+            """)
+    boolean existsAuthorizedLessonByAssignmentUrl(
+            @Param("assignmentUrl") String assignmentUrl,
+            @Param("accountId") String accountId
+    );
+
+
+    @Query("""
+            SELECT COUNT(l) > 0 FROM Lesson l
+            JOIN l.chapter ch
+            JOIN ch.course c
+            JOIN CourseEnrollment ce ON ce.course = c
+            WHERE l.documentUrl = :documentUrl
+            AND l.status = 'active'
+            AND ch.status = 'active'
+            AND c.status = 'active'
+            AND ce.account.id = :accountId
+            AND ce.status = 'active'
+            AND ce.account.status = 'active'
+            """)
+    boolean existsAuthorizedLessonByDocumentUrl(
+            @Param("documentUrl") String documentUrl,
+            @Param("accountId") String accountId
+    );
+
 }

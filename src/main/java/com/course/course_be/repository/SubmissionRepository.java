@@ -112,6 +112,17 @@ public interface SubmissionRepository extends JpaRepository<Submission, String> 
     );
 
 
+    @Query("""
+    SELECT COUNT(s) > 0 FROM Submission s
+    WHERE s.accountSubmitter.id = :accountId
+      AND s.submissionUrl = :submissionUrl
+      AND s.status != :excludedStatus
+""")
+    boolean existsByAccountAndSubmissionUrlAndStatusNot(
+            @Param("accountId") String accountId,
+            @Param("submissionUrl") String submissionUrl,
+            @Param("excludedStatus") String excludedStatus
+    );
 
 
 

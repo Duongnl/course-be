@@ -1,8 +1,11 @@
 package com.course.course_be.service;
 
 
+import com.course.course_be.entity.Account;
 import com.course.course_be.exception.AppException;
 import com.course.course_be.exception.InValidErrorCode;
+import com.course.course_be.repository.LessonRepository;
+import com.course.course_be.repository.SubmissionRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -10,6 +13,7 @@ import lombok.experimental.NonFinal;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.UrlResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +37,10 @@ public class DocumentService {
     @NonFinal
     @Value("${document.document-path}")
     private String DOCUMENT_PATH;
+
+    SubmissionRepository submissionRepository;
+    AuthenticationService authenticationService;
+    LessonRepository lessonRepository;
 
     public String saveDocument(MultipartFile file) {
         try {
@@ -63,7 +71,83 @@ public class DocumentService {
     }
 
 
+    @PreAuthorize("hasRole('ADMIN')")
+    public Resource loadFileAsResource(String fileName) {
+        try {
+            if (fileName.contains("..")) {
+                throw new AppException(InValidErrorCode.JSON_INVALID);
+            }
+
+            Path filePath = Paths.get(DOCUMENT_PATH).toAbsolutePath().normalize().resolve(fileName);
+            if (!Files.exists(filePath)) {
+                throw new AppException(InValidErrorCode.JSON_INVALID);
+            }
+
+            return new UrlResource(filePath.toUri());
+        } catch (Exception e) {
+            throw new AppException(InValidErrorCode.JSON_INVALID);
+        }
+    }
+
+
     public Resource loadDocumentAsResource(String fileName) {
+        Account account = authenticationService.getMyAccountCurrent();
+
+        if (!lessonRepository.existsAuthorizedLessonByDocumentUrl(fileName, account.getId() )) {
+            throw new AppException(InValidErrorCode.JSON_INVALID);
+        }
+
+
+        try {
+            if (fileName.contains("..")) {
+                throw new AppException(InValidErrorCode.JSON_INVALID);
+            }
+
+            Path filePath = Paths.get(DOCUMENT_PATH).toAbsolutePath().normalize().resolve(fileName);
+            if (!Files.exists(filePath)) {
+                throw new AppException(InValidErrorCode.JSON_INVALID);
+            }
+
+            return new UrlResource(filePath.toUri());
+        } catch (Exception e) {
+            throw new AppException(InValidErrorCode.JSON_INVALID);
+        }
+    }
+
+
+    public Resource loadSubmissionAsResource(String fileName) {
+        Account account = authenticationService.getMyAccountCurrent();
+
+            if (!submissionRepository.existsByAccountAndSubmissionUrlAndStatusNot(account.getId(), fileName,"deleted")) {
+                throw new AppException(InValidErrorCode.JSON_INVALID);
+            }
+
+
+        try {
+            if (fileName.contains("..")) {
+                throw new AppException(InValidErrorCode.JSON_INVALID);
+            }
+
+            Path filePath = Paths.get(DOCUMENT_PATH).toAbsolutePath().normalize().resolve(fileName);
+            if (!Files.exists(filePath)) {
+                throw new AppException(InValidErrorCode.JSON_INVALID);
+            }
+
+            return new UrlResource(filePath.toUri());
+        } catch (Exception e) {
+            throw new AppException(InValidErrorCode.JSON_INVALID);
+        }
+    }
+
+
+    public Resource loadAssignmentAsResource(String fileName) {
+        Account account = authenticationService.getMyAccountCurrent();
+
+            if (!lessonRepository.existsAuthorizedLessonByAssignmentUrl(fileName, account.getId() )) {
+                throw new AppException(InValidErrorCode.JSON_INVALID);
+            }
+
+
         try {
             if (fileName.contains("..")) {
                 throw new AppException(InValidErrorCode.JSON_INVALID);

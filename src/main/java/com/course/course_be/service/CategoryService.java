@@ -54,7 +54,7 @@ public class CategoryService {
 
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public Page<CategoryResponse> getAll(String name, String detail, String status, Pageable pageable) {
         name = name == null ? "" : name;
         Page<Category> page;

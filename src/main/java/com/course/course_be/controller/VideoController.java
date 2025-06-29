@@ -47,6 +47,6 @@ public class VideoController {
             HttpServletResponse response
     ) throws IOException {
 
-        videoService.streamVideo(fileName, rangeHeader, response);
+        videoService.streamTrailer(fileName, rangeHeader, response);
     }
 }
