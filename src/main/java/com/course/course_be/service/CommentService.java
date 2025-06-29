@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import org.springframework.data.domain.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class CommentService {
     /**
      * Lấy danh sách bình luận cho trang quản trị, có phân trang, tìm kiếm
      */
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<CommentAdminResponse> getListComment(CommentAdminFilterRequest request) {
         Pageable pageable = PageRequest.of(
                 request.getPage(),
@@ -165,7 +167,7 @@ public class CommentService {
             String courseId,
             LocalDateTime beforeCreatedAt
     ) {
-        Course course = courseRepository.findById(courseId)
+        courseRepository.findById(courseId)
                 .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
 
         Pageable pageable = PageRequest.of(0, request.getPerPage(), Sort.by(Sort.Direction.DESC, "createdAt"));

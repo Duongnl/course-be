@@ -78,6 +78,7 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
         WHERE c.course.id = :courseId
           AND c.status <> :excludedStatus
           AND (:beforeCreatedAt IS NULL OR c.createdAt < :beforeCreatedAt)
+          AND c.parentComment.id IS NULL
         ORDER BY c.createdAt DESC, c.id DESC
     """)
     Page<Comment> findCommentsByCourseWithCursor(
