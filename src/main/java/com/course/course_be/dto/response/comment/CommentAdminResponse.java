@@ -17,6 +17,8 @@ public class CommentAdminResponse {
     Integer replyCount;
     String lessonId;
     String lessonName;
+    String courseId;
+    String courseName;
     String createdAt;
     String status;
 }
