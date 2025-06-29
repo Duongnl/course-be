@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +57,8 @@ public class AccountService {
 
     }
 
+
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<AccountResponse> filterAccounts(
             Integer page,
             Integer perPage,
@@ -122,13 +125,16 @@ public class AccountService {
         return accountMapper.toAccountResponse(savedAccount);
     }
 
+
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ADMIN')")
     public AccountResponse findById(String id) {
         Account account = accountRepository.findByIdAndStatusNot(id, "deleted")
                 .orElseThrow(() -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND));
         return accountMapper.toAccountResponse(account);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public AccountResponse update(String id, UpdateAccountRequest request) {
         Account account = accountRepository.findByIdAndStatusNot(id, "deleted")
                 .orElseThrow(() -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND));
@@ -166,6 +172,7 @@ public class AccountService {
         return accountMapper.toAccountResponse(savedAccount);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public void delete(String id) {
         Account account = accountRepository.findByIdAndStatusNot(id, "deleted")
                 .orElseThrow(() -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND));
