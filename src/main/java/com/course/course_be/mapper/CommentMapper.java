@@ -12,6 +12,8 @@ public interface CommentMapper {
     @Mapping(source="account.profile.name", target ="authorName")
     @Mapping(source="lesson.id", target ="lessonId")
     @Mapping(source="lesson.name", target ="lessonName")
+    @Mapping(source="course.id", target ="courseId")
+    @Mapping(source="course.name", target ="courseName")
     public CommentAdminResponse toCommentAdminResponse(Comment photo);
 
     @Mapping(source="account.id", target ="authorId")
