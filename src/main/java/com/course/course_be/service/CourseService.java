@@ -4,6 +4,7 @@ import com.course.course_be.dto.request.course.CreateCourseRequest;
 import com.course.course_be.dto.request.course.UpdateCourseRequest;
 import com.course.course_be.dto.response.course.CourseResponse;
 import com.course.course_be.dto.response.courseclient.CourseClientResponse;
+import com.course.course_be.dto.response.lesson.LessonResponse;
 import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.entity.Category;
@@ -12,16 +13,21 @@ import com.course.course_be.entity.Course;
 import com.course.course_be.entity.Lesson;
 import com.course.course_be.exception.AppException;
 import com.course.course_be.exception.CategoryErrorCode;
+import com.course.course_be.exception.ChapterErrorCode;
 import com.course.course_be.exception.CourseErrorCode;
 import com.course.course_be.mapper.CourseMapper;
+import com.course.course_be.mapper.LessonMapper;
 import com.course.course_be.repository.CategoryRepository;
+import com.course.course_be.repository.ChapterRepository;
 import com.course.course_be.repository.CourseRepository;
+import com.course.course_be.repository.LessonRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -37,8 +43,11 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final CourseMapper courseMapper;
     private final CategoryRepository categoryRepository;
+    private final ChapterRepository chapterRepository;
+    private final LessonRepository lessonRepository;
+    private final LessonMapper lessonMapper;
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<CourseResponse> getAll(String name, String detail, String status, Pageable pageable) {
         name = name == null ? "" : name;
         Page<Course> page;
@@ -141,7 +150,7 @@ public class CourseService {
 
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     public CourseResponse createNew(CreateCourseRequest request) {
         Category category = categoryRepository.findById(request.getCategoryId()).orElse(null);
         Course course = Course.builder()
@@ -158,6 +167,7 @@ public class CourseService {
         return courseMapper.toCourseResponse(savedCourse);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public CourseResponse update(String id, UpdateCourseRequest request) {
         Course course = courseRepository.findById(id).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
         Category category = categoryRepository.findById(request.getCategoryId()).orElse(null);
@@ -172,6 +182,7 @@ public class CourseService {
         return courseMapper.toCourseResponse(courseRepository.save(course));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public void delete(String id) {
         Course course = courseRepository.findById(id).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
         course.setStatus("deleted");
@@ -185,5 +196,17 @@ public class CourseService {
                 .total(courseRepository.countByStatusNot("deleted"))
                 .build();
 
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<LessonResponse> getAllLessonOfChapter(String name, String detail, String status, String courseId, int chapterId, Pageable pageable) {
+        chapterRepository.findByIdAndCourseId(chapterId, courseId).orElseThrow(() -> new AppException(ChapterErrorCode.CHAPTER_NOT_FOUND));
+        name = name == null ? "" : name;
+        List<String> statusList = new ArrayList<>();
+        if (status != null && !status.trim().isEmpty()) {
+            statusList = Arrays.asList(status.split("\\."));
+        }
+        Page<Lesson> page = lessonRepository.searchLessons(name, detail, status, statusList, chapterId, pageable);
+        return page.map(lessonMapper::toLessonResponse);
     }
 }
