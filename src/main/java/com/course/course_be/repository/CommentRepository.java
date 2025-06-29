@@ -23,16 +23,40 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
      * @param accountName   tên người dùng
      * @param content       nội dung bình luận
      * @param lessonName    tên bài học
-     * @param status        trạng thái loại trừ (thường là 'inactive')
+     * @param courseName    tên khóa học
+     * @param statusExclude trạng thái loại trừ (thường là 'inactive')
      * @param pageable      thông tin phân trang
      */
-    Page<Comment> findByAccount_Profile_NameContainingIgnoreCaseAndContentContainingIgnoreCaseAndLesson_NameContainingIgnoreCaseAndStatusNot(
-            String accountName,
-            String content,
-            String lessonName,
-            String status,
+//    Page<Comment> findByAccount_Profile_NameContainingIgnoreCaseAndContentContainingIgnoreCaseAndLesson_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusNot(
+//            String accountName,
+//            String content,
+//            String lessonName,
+//            String courseName,
+//            String status,
+//            Pageable pageable
+//    );
+    @Query("""
+                SELECT c FROM Comment c
+                LEFT JOIN c.lesson l    
+                LEFT JOIN c.course cr
+                LEFT JOIN c.account acc
+                LEFT JOIN acc.profile p
+                WHERE
+                    (:accountName IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :accountName, '%')))
+                    AND (:content IS NULL OR LOWER(c.content) LIKE LOWER(CONCAT('%', :content, '%')))
+                    AND (:lessonName IS NULL OR LOWER(l.name) LIKE LOWER(CONCAT('%', :lessonName, '%')))
+                    AND (:courseName IS NULL OR LOWER(cr.name) LIKE LOWER(CONCAT('%', :courseName, '%')))
+                    AND c.status <> :statusExclude
+            """)
+    Page<Comment> findCommentsForAdmin(
+            @Param("accountName") String accountName,
+            @Param("content") String content,
+            @Param("lessonName") String lessonName,
+            @Param("courseName") String courseName,
+            @Param("statusExclude") String statusExclude,
             Pageable pageable
     );
+
 
     /**
      * Lấy bình luận cha theo khóa học (course), loại trừ các bình luận đã bị ẩn (status)
@@ -68,19 +92,19 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
      * - Loại trừ bình luận có trạng thái bị ẩn
      * - Sắp xếp theo thời gian tạo mới nhất
      *
-     * @param courseId         ID của khóa học
-     * @param beforeCreatedAt  (tuỳ chọn) giới hạn thời gian lấy comment trước đó
-     * @param excludedStatus   trạng thái cần loại trừ (ví dụ: "inactive")
-     * @param pageable         thông tin phân trang
+     * @param courseId        ID của khóa học
+     * @param beforeCreatedAt (tuỳ chọn) giới hạn thời gian lấy comment trước đó
+     * @param excludedStatus  trạng thái cần loại trừ (ví dụ: "inactive")
+     * @param pageable        thông tin phân trang
      */
     @Query("""
-        SELECT c FROM Comment c
-        WHERE c.course.id = :courseId
-          AND c.status <> :excludedStatus
-          AND (:beforeCreatedAt IS NULL OR c.createdAt < :beforeCreatedAt)
-          AND c.parentComment.id IS NULL
-        ORDER BY c.createdAt DESC, c.id DESC
-    """)
+                SELECT c FROM Comment c
+                WHERE c.course.id = :courseId
+                  AND c.status <> :excludedStatus
+                  AND (:beforeCreatedAt IS NULL OR c.createdAt < :beforeCreatedAt)
+                  AND c.parentComment.id IS NULL
+                ORDER BY c.createdAt DESC, c.id DESC
+            """)
     Page<Comment> findCommentsByCourseWithCursor(
             @Param("courseId") String courseId,
             @Param("beforeCreatedAt") LocalDateTime beforeCreatedAt,

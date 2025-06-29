@@ -40,15 +40,28 @@ public class CommentService {
                 request.getPerPage(),
                 Sort.by(Sort.Direction.fromString(request.getOrder()), request.getSort())
         );
+        String authorName = Optional.ofNullable(request.getAuthorName()).orElse("");
+        String content = Optional.ofNullable(request.getContent()).orElse("");
+        String status = "inactive";
 
-        Page<Comment> commentPage = commentRepository
-                .findByAccount_Profile_NameContainingIgnoreCaseAndContentContainingIgnoreCaseAndLesson_NameContainingIgnoreCaseAndStatusNot(
-                        Optional.ofNullable(request.getAuthorName()).orElse(""),
-                        Optional.ofNullable(request.getContent()).orElse(""),
-                        Optional.ofNullable(request.getLessonName()).orElse(""),
-                        "inactive",
-                        pageable
-                );
+        String courseName = Optional.ofNullable(request.getCourseName())
+                .filter(s -> !s.isBlank())
+                .orElse(null);
+
+        String lessonName = (courseName != null)
+                ? null
+                : Optional.ofNullable(request.getLessonName())
+                .filter(s -> !s.isBlank())
+                .orElse(null);
+
+        Page<Comment> commentPage = commentRepository.findCommentsForAdmin(
+                authorName,
+                content,
+                lessonName,
+                courseName,
+                status,
+                pageable
+        );
 
         return commentPage.map(comment -> {
             CommentAdminResponse response = commentMapper.toCommentAdminResponse(comment);

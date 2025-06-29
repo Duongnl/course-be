@@ -9,6 +9,7 @@ public class CommentAdminFilterRequest {
     String authorName;
     String content;
     String lessonName;
+    String courseName;
     int page = 0;
 
     @Setter(AccessLevel.NONE)
@@ -51,7 +52,8 @@ public class CommentAdminFilterRequest {
         if ("createdAt".equals(field) ||
                 "authorName".equals(field) ||
                 "lessonName".equals(field) ||
-                "content".equals(field)) {
+                "content".equals(field) ||
+                "courseName".equals(field)) {
 
             // Convert alias if needed
             this.sort = "authorName".equals(field) ? "accountProfileName" : field;
