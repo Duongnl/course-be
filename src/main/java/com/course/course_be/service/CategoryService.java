@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -53,7 +54,7 @@ public class CategoryService {
 
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<CategoryResponse> getAll(String name, String detail, String status, Pageable pageable) {
         name = name == null ? "" : name;
         Page<Category> page;
@@ -69,17 +70,19 @@ public class CategoryService {
         return page.map(categoryMapper::toCategoryResponse);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public CategoryResponse createNew(CreateCategoryRequest request) {
         Category category = Category.builder()
                 .name(request.getName())
                 .detail(request.getDetail())
-                .status("active")
+                .status("inactive")
                 .createdAt(LocalDateTime.now())
                 .build();
         Category saved = categoryRepository.save(category);
         return categoryMapper.toCategoryResponse(saved);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public CategoryResponse update(String id, UpdateCategoryRequest request) {
         Category category = categoryRepository.findById(id).orElseThrow(() -> new AppException(CategoryErrorCode.CATEGORY_NOT_FOUND));
 
@@ -91,6 +94,7 @@ public class CategoryService {
         return categoryMapper.toCategoryResponse(saved);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public void delete(String id) {
         Category category = categoryRepository.findById(id).orElseThrow(() -> new AppException(CategoryErrorCode.CATEGORY_NOT_FOUND));
         category.setStatus("deleted");

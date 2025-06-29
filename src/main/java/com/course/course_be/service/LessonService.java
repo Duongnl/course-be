@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -140,6 +141,7 @@ public class LessonService {
         return lessonClientDetailResponse;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<LessonResponse> getAll(String name, String detail, String status, int chapterId, Pageable pageable) {
         chapterRepository.findById(chapterId).orElseThrow(() -> new AppException(ChapterErrorCode.CHAPTER_NOT_FOUND));
         name = name == null ? "" : name;
@@ -151,6 +153,7 @@ public class LessonService {
         return page.map(lessonMapper::toLessonResponse);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public LessonResponse createNew(CreateLessonRequest request) {
         Chapter chapter = chapterRepository.findById(request.getChapterId()).orElseThrow(() -> new AppException(ChapterErrorCode.CHAPTER_NOT_FOUND));
         Lesson lesson = Lesson.builder()
@@ -169,6 +172,7 @@ public class LessonService {
         return lessonMapper.toLessonResponse(savedLesson);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public LessonResponse update(String id, UpdateLessonRequest request) {
         Lesson lesson = lessonRepository.findById(id).orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
         lesson.setLessonNumber(request.getLessonNumber());
@@ -184,6 +188,7 @@ public class LessonService {
         return lessonMapper.toLessonResponse(updatedLesson);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public void delete(String id) {
         Lesson lesson = lessonRepository.findById(id).orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
         lesson.setStatus("deleted");

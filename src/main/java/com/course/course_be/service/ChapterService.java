@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ public class ChapterService {
     private final CourseRepository courseRepository;
     ChapterMapper chapterMapper;
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<ChapterResponse> getAll(String name, String detail, String status,String courseId, Pageable pageable) {
         courseRepository.findById(courseId).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
         name = name == null ? "" : name;
@@ -42,6 +44,7 @@ public class ChapterService {
         return page.map(chapterMapper::toChapterResponse);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public ChapterResponse createNew(CreateChapterRequest request) {
         Course course = courseRepository.findById(request.getCourseId()).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
         Chapter chapter = Chapter.builder()
@@ -55,6 +58,7 @@ public class ChapterService {
         return chapterMapper.toChapterResponse(savedChapter);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public ChapterResponse update(int id, UpdateChapterRequest request) {
         Chapter chapter = chapterRepository.findById(id).orElseThrow(() -> new AppException(ChapterErrorCode.CHAPTER_NOT_FOUND));
         chapter.setName(request.getName());
@@ -64,6 +68,7 @@ public class ChapterService {
         return chapterMapper.toChapterResponse(chapterRepository.save(chapter));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteChapter(int id) {
         Chapter chapter = chapterRepository.findById(id).orElseThrow(() -> new AppException(ChapterErrorCode.CHAPTER_NOT_FOUND));
         chapter.setStatus("deleted");

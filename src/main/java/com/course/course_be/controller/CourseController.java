@@ -5,6 +5,7 @@ import com.course.course_be.dto.request.course.UpdateCourseRequest;
 import com.course.course_be.dto.response.ApiResponse;
 import com.course.course_be.dto.response.course.CourseResponse;
 import com.course.course_be.dto.response.courseclient.CourseClientResponse;
+import com.course.course_be.dto.response.lesson.LessonResponse;
 import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.dto.response.homeclient.CourseCardResponse;
 import com.course.course_be.service.CourseService;
@@ -57,6 +58,26 @@ public class CourseController {
         return ApiResponse.<List<CourseCardResponse>>builder()
                 .totalPages(course.getTotalPages())
                 .result(course.stream().toList())
+                .build();
+    }
+
+    @GetMapping("/{courseId}/chapter/{chapterId}")
+    public ApiResponse<List<LessonResponse>> getAllLessonOfChapter(
+            @PathVariable("courseId") String courseId,
+            @PathVariable("chapterId") int chapterId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer perPage,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String detail,
+            @RequestParam(required = false) String status) {
+        Pageable pageable = PageableUtil.createPageable(page, perPage, sort);
+        Page<LessonResponse> pageResult = courseService.getAllLessonOfChapter(name, detail, status, courseId, chapterId, pageable);
+        return ApiResponse.<List<LessonResponse>>builder()
+                .result(pageResult.stream().toList())
+                .currentPage(page != null ? page : 1)
+                .totalPages(pageResult.getTotalPages())
+                .totalItems(pageResult.getTotalElements())
                 .build();
     }
 
