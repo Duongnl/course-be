@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ChapterRepository extends JpaRepository<Chapter, Integer> {
     @Query("""
@@ -29,4 +30,5 @@ public interface ChapterRepository extends JpaRepository<Chapter, Integer> {
             @Param("courseId") String courseId,
             Pageable pageable
     );
+    Optional<Chapter> findByIdAndCourseId(Integer chapterId, String courseId);
 }
