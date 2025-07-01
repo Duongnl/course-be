@@ -44,7 +44,7 @@ public interface CourseRepository extends JpaRepository<Course, String> {
     SELECT DISTINCT c FROM Course c
     JOIN FETCH c.chapters ch
     JOIN FETCH ch.lessons l
-    WHERE c.status = 'active' AND c.id = (
+    WHERE  c.id = (
         SELECT c2.id FROM Course c2
         JOIN c2.chapters ch2
         JOIN ch2.lessons l2
@@ -141,8 +141,22 @@ public interface CourseRepository extends JpaRepository<Course, String> {
       AND c.status = 'active'
 """)
     Optional<Course> findByIdWithChaptersAndLessons(@Param("id") String id);
+
+    @Query("""
+    SELECT DISTINCT c FROM Course c
+    LEFT JOIN FETCH c.chapters ch
+    LEFT JOIN FETCH ch.lessons l
+    WHERE c.id = :id
+""")
+    Optional<Course> findByIdWithChaptersAndLessonsAdmin(@Param("id") String id);
+
+
     long countByStatus(String status);
     long countByStatusNot(String status);
+
+
+
+
 
     List<Course> findByCategory(Category category);
 }

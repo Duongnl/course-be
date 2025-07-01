@@ -37,6 +37,7 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
         LEFT JOIN ch.lessons l ON l.status = 'active'
         LEFT JOIN l.lessonProgresses lp ON lp.account.id = :accountId
         WHERE ce.account.id = :accountId
+          AND ce.status <> 'pending' AND ce.status <> 'deleted'
           AND LOWER(c.name) LIKE LOWER(CONCAT('%', :courseName, '%'))
         GROUP BY c.id, c.name, ce.enrolledAt
         HAVING (
@@ -113,7 +114,7 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
      * Đếm tổng số tài khoản đã đăng ký học (trừ tài khoản đã xóa)
      */
     @Query("""
-        SELECT COUNT(DISTINCT ce.account.id)
+         SELECT COUNT(DISTINCT ce.account.id)
         FROM CourseEnrollment ce
         WHERE ce.status = 'active'
           AND ce.account.status <> 'deleted'

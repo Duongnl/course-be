@@ -109,23 +109,14 @@ public class LessonService {
 
     public LessonClientDetailResponse getLesson(String lessonId) {
         Account account = authenticationService.getMyAccountCurrent();
-        Lesson lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
-
-        if (!lesson.getStatus().equals("active")) {
-            throw new AppException(LessonErrorCode.LESSON_NOT_FOUND);
-        }
-
-        if (!lesson.getChapter().getStatus().equals("active")) {
-            throw new AppException(LessonErrorCode.LESSON_NOT_FOUND);
-        }
-
-        if (!lesson.getChapter().getCourse().getStatus().equals("active")) {
-            throw new AppException(LessonErrorCode.LESSON_NOT_FOUND);
-        }
+        Lesson lesson = new Lesson();
 
 
-        if (!account.getRole().equals("ADMIN")) {
+        if (account.getRole().equals("ADMIN")) {
+            lesson = lessonRepository.findById(lessonId)
+                    .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+
+        }  else {
             lesson = lessonRepository.findAuthorizedLessonById(lessonId, account.getId())
                     .orElseThrow(() -> new AppException(LessonErrorCode.LESSON_NOT_FOUND));
         }

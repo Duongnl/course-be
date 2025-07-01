@@ -220,7 +220,7 @@ public class AccountService {
         return CountResponse.builder()
                 .name("enroll")
                 .value(courseEnrollmentRepository.countActiveAccountsEnrolled())
-                .total(accountRepository.countByStatus("active"))
+                .total(accountRepository.countByStatusNot("deleted"))
                 .build();
     }
 

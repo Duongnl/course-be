@@ -263,7 +263,11 @@ public class AuthenticationService {
 
 
 
-
+    public String getScopeFromToken(String token) throws ParseException, JOSEException {
+        SignedJWT signedJWT = SignedJWT.parse(token);
+        JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+        return claims.getStringClaim("scope");
+    }
 
     public LocalDate getExpireDateFromToken(String token) throws ParseException, JOSEException {
         SignedJWT signedJWT = SignedJWT.parse(token);
@@ -337,9 +341,13 @@ public class AuthenticationService {
                 throw new AppException(AuthErrorCode.UNAUTHENTICATED);
             }
             else {
+//                System.out.println("role >>> " + getScopeFromToken(token));
                 Account account =  accountRepository.findById(getIdFromToken(token)).orElseThrow(()
                         -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND));
                 if(!account.getStatus().equals("active")) {
+                    throw new AppException(AuthErrorCode.UNAUTHENTICATED);
+                }
+                if (!account.getRole().equals(getScopeFromToken(token))) {
                     throw new AppException(AuthErrorCode.UNAUTHENTICATED);
                 }
                 return  AuthenticationResponse.builder()

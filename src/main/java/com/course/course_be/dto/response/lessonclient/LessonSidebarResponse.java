@@ -17,4 +17,5 @@ public class LessonSidebarResponse {
     Integer lessonNumber;
     Integer duration;
     boolean viewed;
+    String assignmentUrl;
 }

@@ -76,6 +76,7 @@ public interface AccountRepository extends JpaRepository<Account, String>, JpaSp
     );
 
     long countByStatus(String status);
+
     long countByStatusNot(String status);
 
 }

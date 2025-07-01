@@ -7,10 +7,7 @@ import com.course.course_be.dto.response.courseclient.CourseClientResponse;
 import com.course.course_be.dto.response.lesson.LessonResponse;
 import com.course.course_be.dto.response.statistic.CountResponse;
 import com.course.course_be.dto.response.homeclient.CourseCardResponse;
-import com.course.course_be.entity.Category;
-import com.course.course_be.entity.Chapter;
-import com.course.course_be.entity.Course;
-import com.course.course_be.entity.Lesson;
+import com.course.course_be.entity.*;
 import com.course.course_be.exception.AppException;
 import com.course.course_be.exception.CategoryErrorCode;
 import com.course.course_be.exception.ChapterErrorCode;
@@ -46,6 +43,7 @@ public class CourseService {
     private final ChapterRepository chapterRepository;
     private final LessonRepository lessonRepository;
     private final LessonMapper lessonMapper;
+    private final AuthenticationService authenticationService;
 
     @PreAuthorize("hasRole('ADMIN')")
     public Page<CourseResponse> getAll(String name, String detail, String status, Pageable pageable) {
@@ -63,8 +61,16 @@ public class CourseService {
     }
 
     public CourseClientResponse getCourse(String id) {
-        Course course = courseRepository.findByIdWithChaptersAndLessons(id)
-                .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+        Account  account  = authenticationService.getMyAccountCurrent();
+        Course course = new Course();
+        if (account.getRole().equals("ADMIN")) {
+            course =   courseRepository.findByIdWithChaptersAndLessonsAdmin(id)
+                    .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+        } else {
+            course = courseRepository.findByIdWithChaptersAndLessons(id)
+                    .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+        }
+
         course.setChapters(
                 course.getChapters().stream()
                         .filter(ch -> "active".equals(ch.getStatus()))
