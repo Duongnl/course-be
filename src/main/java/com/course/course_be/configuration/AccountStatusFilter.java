@@ -4,6 +4,8 @@ import com.course.course_be.entity.Account;
 import com.course.course_be.exception.AppException;
 import com.course.course_be.exception.AuthErrorCode;
 import com.course.course_be.repository.AccountRepository;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,12 +34,19 @@ public class AccountStatusFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
       
-        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof Jwt) {
+        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof Jwt jwt) {
             String accountId = authentication.getName();
+
             if (accountId != null) {
                 Optional<Account> account = accountRepository.findById(accountId);
                 if (account.isPresent()) {
                     if (!account.get().getStatus().equals("active")) {
+                        jwtAuthenticationEntryPoint.commence(request, response, new AuthenticationException("Account is not active") {
+                        });
+                        return; // dừng filter chain, trả về lỗi ngay
+                    }
+
+                    if (!account.get().getRole().equals(jwt.getClaimAsString("scope"))) {
                         jwtAuthenticationEntryPoint.commence(request, response, new AuthenticationException("Account is not active") {
                         });
                         return; // dừng filter chain, trả về lỗi ngay
