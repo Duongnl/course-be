@@ -16,6 +16,7 @@ public interface CourseEnrollmentMapper {
     @Mapping(source="account.profile.name", target ="accountName")
     @Mapping(source="course.id", target ="courseId")
     @Mapping(source="course.name", target ="courseName")
+    @Mapping(source="account.username", target ="username")
     public CourseEnrollmentAdminResponse toCourseEnrollmentAdminResponse(CourseEnrollment courseEnrollment);
 
     CourseEnrollmentResponse toCourseEnrollmentResponse(CourseEnrollment courseEnrollment);

@@ -9,6 +9,7 @@ public class CourseEnrollmentAdminResponse {
     String courseName;
     String accountId;
     String accountName;
+    String username;
     String enrolledAt;
     String status;
 }

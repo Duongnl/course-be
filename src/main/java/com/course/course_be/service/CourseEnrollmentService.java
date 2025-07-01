@@ -68,11 +68,12 @@ public class CourseEnrollmentService {
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public CourseEnrollmentAdminResponse changeStatus(ChangeStatusRequest request) {
-        CourseEnrollment courseEnrollment = courseEnrollmentRepository.findById(request.getCourseEnrollmentId()).orElseThrow(() -> new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_NOT_FOUND));
+        CourseEnrollment courseEnrollment = courseEnrollmentRepository.findById(request.getCourseEnrollmentId())
+                .orElseThrow(() -> new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_NOT_FOUND));
 
         if (!Objects.equals(courseEnrollment.getStatus(), request.getStatus())) {
             courseEnrollment.setStatus(request.getStatus());
-        }
+        } else throw new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_IS_EXIST);
 
         return courseEnrollmentMapper.toCourseEnrollmentAdminResponse(courseEnrollment);
     }
@@ -122,7 +123,7 @@ public class CourseEnrollmentService {
         Page<CourseEnrollment> courseEnrollmentPage;
 
         if (request.getStatus() == null || request.getStatus().isEmpty()) {
-            courseEnrollmentPage = courseEnrollmentRepository.findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusNot(accountName, courseName, "deleted",pageable);
+            courseEnrollmentPage = courseEnrollmentRepository.findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusNot(accountName, courseName, "deleted", pageable);
         } else {
             List<String> statusList = Arrays.asList(request.getStatus().split("\\."));
             courseEnrollmentPage = courseEnrollmentRepository.findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusIn(accountName, courseName, statusList, pageable);
@@ -195,32 +196,33 @@ public class CourseEnrollmentService {
      */
     @Transactional
     public CourseEnrollmentAdminResponse create(CourseEnrollmentAdminCreateRequest request) {
-        // 1. Tìm khóa học, nếu không có thì throw lỗi
+        // 1. Tìm khóa học
         Course course = courseRepository.findById(request.getCourseId())
                 .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
 
-        // 2. Tìm tài khoản, nếu không có thì throw lỗi
+        // 2. Tìm tài khoản
         Account account = accountRepository.findById(request.getAccountId())
                 .orElseThrow(() -> new AppException(AuthErrorCode.UNAUTHENTICATED));
 
-        // 3. Kiểm tra nếu đã đăng ký rồi thì trả về bản ghi cũ (không tạo lại)
-        Optional<CourseEnrollment> existOpt = courseEnrollmentRepository.findByAccountIdAndCourseId(account.getId(), course.getId());
-        if (existOpt.isPresent()) {
-            CourseEnrollment exist = existOpt.get();
+        // 3. Kiểm tra đăng ký đã tồn tại
+        Optional<CourseEnrollment> existOpt = courseEnrollmentRepository
+                .findByAccountIdAndCourseId(account.getId(), course.getId());
 
-            // Nếu đang active thì trả về luôn
-            if (!"deleted".equals(exist.getStatus())) {
-                return courseEnrollmentMapper.toCourseEnrollmentAdminResponse(exist);
+        if (existOpt.isPresent()) {
+            CourseEnrollment existing = existOpt.get();
+            if ("active".equalsIgnoreCase(existing.getStatus())) {
+                throw new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_IS_EXIST);
             }
 
-            // Nếu trạng thái đã bị xóa, thì phục hồi lại
-            exist.setStatus("active");
-            exist.setEnrolledAt(LocalDateTime.now());
-            courseEnrollmentRepository.save(exist);
-            return courseEnrollmentMapper.toCourseEnrollmentAdminResponse(exist);
+            // Phục hồi trạng thái active
+            existing.setStatus("active");
+            existing.setEnrolledAt(LocalDateTime.now());
+            courseEnrollmentRepository.save(existing);
+
+            return courseEnrollmentMapper.toCourseEnrollmentAdminResponse(existing);
         }
 
-        // 4. Nếu chưa tồn tại -> tạo mới
+        // 4. Nếu chưa đăng ký -> tạo mới
         CourseEnrollment courseEnrollment = CourseEnrollment.builder()
                 .account(account)
                 .course(course)
