@@ -22,6 +22,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -61,10 +62,10 @@ public class CourseService {
     }
 
     public CourseClientResponse getCourse(String id) {
-        Account  account  = authenticationService.getMyAccountCurrent();
+        Account account = authenticationService.getMyAccountCurrent();
         Course course = new Course();
         if (account.getRole().equals("ADMIN")) {
-            course =   courseRepository.findByIdWithChaptersAndLessonsAdmin(id)
+            course = courseRepository.findByIdWithChaptersAndLessonsAdmin(id)
                     .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
         } else {
             course = courseRepository.findByIdWithChaptersAndLessons(id)
@@ -129,7 +130,26 @@ public class CourseService {
         }
 
 
-        return PageCourse.map(courseMapper::toCourseCardResponse);
+
+        return PageCourse.map(course -> {
+            CourseCardResponse response = courseMapper.toCourseCardResponse(course);
+
+            int totalLessons = course.getChapters().stream()
+                    .mapToInt(ch -> ch.getLessons() != null ? ch.getLessons().size() : 0)
+                    .sum();
+
+            int totalDuration = course.getChapters().stream()
+                    .flatMap(ch -> ch.getLessons() != null ? ch.getLessons().stream() : Stream.empty())
+                    .filter(Objects::nonNull)
+                    .mapToInt(lesson -> lesson.getDuration() != null ? lesson.getDuration() : 0)
+                    .sum();
+
+            response.setTotalLessons(totalLessons);
+            response.setTotalDuration(totalDuration);
+
+            return response;
+        });
+
     }
 
 

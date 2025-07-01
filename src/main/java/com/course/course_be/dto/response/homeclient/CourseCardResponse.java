@@ -17,5 +17,6 @@ public class CourseCardResponse {
     String id;
     BigDecimal price;
     LocalDateTime createdAt;
-
+    Integer totalLessons;
+    Integer totalDuration;
 }
