@@ -19,6 +19,7 @@ public class SubmissionAdminResponse {
    String submitterUsername; // email nguoi nop
    String submitterName; // ten nguoi nop
    String submissionUrl;
+   String assignmentUrl;
 
    String graderEmail;
    String graderName;
