@@ -9,6 +9,7 @@ import com.course.course_be.dto.response.comment.CommentResponse;
 import com.course.course_be.dto.response.comment.CommentAdminResponse;
 import com.course.course_be.entity.Comment;
 import com.course.course_be.service.CommentService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -106,7 +107,7 @@ public class CommentController {
     }
 
     @PostMapping("")
-    public ApiResponse<CommentResponse> createComment(@RequestBody CommentCreateRequest request) {
+    public ApiResponse<CommentResponse> createComment(@Valid  @RequestBody CommentCreateRequest request) {
         return ApiResponse.<CommentResponse>builder()
                 .result(commentService.createComment(request))
                 .build();

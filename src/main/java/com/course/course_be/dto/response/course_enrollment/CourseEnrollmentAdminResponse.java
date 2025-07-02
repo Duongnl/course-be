@@ -1,4 +1,4 @@
-package com.course.course_be.dto.response.course;
+package com.course.course_be.dto.response.course_enrollment;
 
 import lombok.Data;
 
@@ -9,6 +9,7 @@ public class CourseEnrollmentAdminResponse {
     String courseName;
     String accountId;
     String accountName;
+    String username;
     String enrolledAt;
     String status;
 }
