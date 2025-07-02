@@ -69,7 +69,7 @@ public class CourseEnrollmentService {
     @Transactional
     public CourseEnrollmentAdminResponse changeStatus(ChangeStatusRequest request) {
         CourseEnrollment courseEnrollment = courseEnrollmentRepository
-                .findByIdAndStatus(request.getCourseEnrollmentId(), "active")
+                .findById(request.getCourseEnrollmentId())
                 .orElseThrow(() -> new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_NOT_FOUND));
 
         String newStatus = request.getStatus().trim().toLowerCase();
@@ -128,14 +128,15 @@ public class CourseEnrollmentService {
 
         String accountName = Optional.ofNullable(request.getAccountName()).orElse("");
         String courseName = Optional.ofNullable(request.getCourseName()).orElse("");
+        String username = Optional.ofNullable(request.getUsername()).orElse("");
 
         Page<CourseEnrollment> courseEnrollmentPage;
 
         if (request.getStatus() == null || request.getStatus().isEmpty()) {
-            courseEnrollmentPage = courseEnrollmentRepository.findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusNot(accountName, courseName, "deleted", pageable);
+            courseEnrollmentPage = courseEnrollmentRepository.findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndAccount_UsernameContainingIgnoreCaseAndStatusNot(accountName, courseName,username, "deleted", pageable);
         } else {
             List<String> statusList = Arrays.asList(request.getStatus().split("\\."));
-            courseEnrollmentPage = courseEnrollmentRepository.findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusIn(accountName, courseName, statusList, pageable);
+            courseEnrollmentPage = courseEnrollmentRepository.findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndAccount_UsernameContainingIgnoreCaseAndStatusIn(accountName, courseName,username, statusList, pageable);
         }
 
         return courseEnrollmentPage.map(courseEnrollmentMapper::toCourseEnrollmentAdminResponse);
