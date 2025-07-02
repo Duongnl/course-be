@@ -12,10 +12,7 @@ import com.course.course_be.dto.response.homeclient.CourseEnrollCardResponse;
 import com.course.course_be.entity.Account;
 import com.course.course_be.entity.Course;
 import com.course.course_be.entity.CourseEnrollment;
-import com.course.course_be.exception.AppException;
-import com.course.course_be.exception.AuthErrorCode;
-import com.course.course_be.exception.CourseEnrollmentErrorCode;
-import com.course.course_be.exception.CourseErrorCode;
+import com.course.course_be.exception.*;
 import com.course.course_be.mapper.CourseEnrollmentMapper;
 import com.course.course_be.mapper.CourseMapper;
 import com.course.course_be.repository.AccountRepository;
@@ -216,23 +213,30 @@ public class CourseEnrollmentService {
                 .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
 
         // 2. Tìm tài khoản
-        Account account = accountRepository.findByIdAndStatus(request.getAccountId(), "active")
-                .orElseThrow(() -> new AppException(AuthErrorCode.UNAUTHENTICATED));
+        Account account = accountRepository.findById(request.getAccountId())
+                .orElseThrow(() -> new AppException(AccountErrorCode.ACCOUNT_NOT_FOUND));
+
 
         // 3. Kiểm tra đăng ký đã tồn tại
         Optional<CourseEnrollment> existOpt = courseEnrollmentRepository
-                .findByAccountIdAndCourseIdAndStatus(account.getId(), course.getId(), "active");
+                .findByAccountIdAndCourseId(account.getId(), course.getId());
 
+//        neu da ton tai
         if (existOpt.isPresent()) {
-            CourseEnrollment existing = existOpt.get();
-            if ("active".equalsIgnoreCase(existing.getStatus())) {
-                throw new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_IS_EXIST);
-            }
 
-            // Phục hồi trạng thái active
-            existing.setStatus("active");
-            existing.setEnrolledAt(LocalDateTime.now());
-            courseEnrollmentRepository.save(existing);
+            CourseEnrollment existing = existOpt.get();
+
+            switch (existing.getStatus()) {
+                case "active" -> throw new AppException(CourseEnrollmentErrorCode.EXIST_ACTIVE);
+                case "pending" -> throw new AppException(CourseEnrollmentErrorCode.EXIST_PENDING);
+                case "inactive" -> throw new AppException(CourseEnrollmentErrorCode.EXIST_INACTIVE);
+                case "deleted" -> {
+                    // Phục hồi trạng thái active
+                    existing.setStatus("active");
+                    existing.setEnrolledAt(LocalDateTime.now());
+                    courseEnrollmentRepository.save(existing);
+                }
+            }
 
             return courseEnrollmentMapper.toCourseEnrollmentAdminResponse(existing);
         }
