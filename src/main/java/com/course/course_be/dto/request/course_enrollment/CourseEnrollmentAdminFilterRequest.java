@@ -11,6 +11,7 @@ public class CourseEnrollmentAdminFilterRequest {
 
     private String accountName;
     private String courseName;
+    private String username;
     private String status;
 
     private int page = 0;

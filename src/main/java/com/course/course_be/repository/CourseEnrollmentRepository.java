@@ -99,15 +99,15 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
     /**
      * Admin tìm theo tên người dùng và tên khóa học (dạng LIKE)
      */
-    Page<CourseEnrollment> findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusNot(
-            String accountName, String courseName,String statusExclude, Pageable pageable
+    Page<CourseEnrollment> findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndAccount_UsernameContainingIgnoreCaseAndStatusNot(
+            String accountName, String courseName,String username,String statusExclude, Pageable pageable
     );
 
     /**
      * Admin lọc nâng cao hơn (có theo danh sách trạng thái)
      */
-    Page<CourseEnrollment> findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndStatusIn(
-            String accountName, String courseName, List<String> statusList, Pageable pageable
+    Page<CourseEnrollment> findByAccount_Profile_NameContainingIgnoreCaseAndCourse_NameContainingIgnoreCaseAndAccount_UsernameContainingIgnoreCaseAndStatusIn(
+            String accountName, String courseName,String username, List<String> statusList, Pageable pageable
     );
 
     /**
