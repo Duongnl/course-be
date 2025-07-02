@@ -16,6 +16,7 @@ public class SubmissionClientResponse {
     String courseName; // ten khoa hoc
     String lessonName; // ten bai hoc
     String submissionUrl;
+    String assignmentUrl;
     String score;
     String comment;
     LocalDateTime submittedAt;

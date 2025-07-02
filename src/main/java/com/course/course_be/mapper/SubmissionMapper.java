@@ -17,6 +17,7 @@ public interface SubmissionMapper {
     @Mapping(source = "accountSubmitter.profile.name", target="submitterName")
     @Mapping(source = "accountGrader.email", target="graderEmail")
     @Mapping(source = "accountGrader.profile.name", target="graderName")
+    @Mapping(source = "lesson.assignmentUrl", target = "assignmentUrl")
     SubmissionAdminResponse toSubmissionAdminResponse(Submission submission);
 
     void toSubmission(@MappingTarget Submission submission, GradedSubmissionRequest gradedSubmissionRequest);
@@ -24,6 +25,7 @@ public interface SubmissionMapper {
 
     @Mapping(source = "lesson.chapter.course.name", target="courseName")
     @Mapping(source = "lesson.name", target="lessonName")
+    @Mapping(source = "lesson.assignmentUrl", target = "assignmentUrl")
     SubmissionClientResponse toSubmissionClientResponse(Submission submission);
 
 }
