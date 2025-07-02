@@ -156,7 +156,7 @@ public interface CourseRepository extends JpaRepository<Course, String> {
 
 
 
-
+    Optional<Course> findByIdAndStatus(String id, String status);
 
     List<Course> findByCategory(Category category);
 }

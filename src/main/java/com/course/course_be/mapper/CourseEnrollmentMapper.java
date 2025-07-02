@@ -1,7 +1,7 @@
 package com.course.course_be.mapper;
 
 import com.course.course_be.dto.response.category.CategoryResponse;
-import com.course.course_be.dto.response.course.CourseEnrollmentAdminResponse;
+import com.course.course_be.dto.response.course_enrollment.CourseEnrollmentAdminResponse;
 import com.course.course_be.dto.response.course.CourseResponse;
 import com.course.course_be.dto.response.course_enrollment.CourseEnrollmentResponse;
 import com.course.course_be.entity.CourseEnrollment;

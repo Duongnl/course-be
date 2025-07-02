@@ -1,4 +1,4 @@
-package com.course.course_be.dto.response.course;
+package com.course.course_be.dto.response.course_enrollment;
 
 import lombok.Data;
 

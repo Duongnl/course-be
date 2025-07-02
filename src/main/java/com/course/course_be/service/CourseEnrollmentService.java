@@ -6,7 +6,7 @@ import com.course.course_be.dto.request.course_enrollment.CourseEnrollmentAdminF
 import com.course.course_be.dto.request.course_enrollment.RegisterCourseClient;
 import com.course.course_be.dto.response.account.CourseProgressResponse;
 import com.course.course_be.dto.response.account.MyCourseResponse;
-import com.course.course_be.dto.response.course.CourseEnrollmentAdminResponse;
+import com.course.course_be.dto.response.course_enrollment.CourseEnrollmentAdminResponse;
 import com.course.course_be.dto.response.course_enrollment.CourseEnrollmentResponse;
 import com.course.course_be.dto.response.homeclient.CourseEnrollCardResponse;
 import com.course.course_be.entity.Account;
@@ -68,13 +68,22 @@ public class CourseEnrollmentService {
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public CourseEnrollmentAdminResponse changeStatus(ChangeStatusRequest request) {
-        CourseEnrollment courseEnrollment = courseEnrollmentRepository.findById(request.getCourseEnrollmentId())
+        CourseEnrollment courseEnrollment = courseEnrollmentRepository
+                .findByIdAndStatus(request.getCourseEnrollmentId(), "active")
                 .orElseThrow(() -> new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_NOT_FOUND));
 
-        if (!Objects.equals(courseEnrollment.getStatus(), request.getStatus())) {
-            courseEnrollment.setStatus(request.getStatus());
-        } else throw new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_IS_EXIST);
+        String newStatus = request.getStatus().trim().toLowerCase();
+        String currentStatus = courseEnrollment.getStatus().trim().toLowerCase();
 
+        if (Objects.equals(currentStatus, newStatus)) {
+            throw new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_IS_EXIST);
+        }
+
+        if (!List.of("active", "pending", "inactive", "deleted").contains(newStatus)) {
+            throw new AppException(CourseEnrollmentErrorCode.COURSE_ENROLLMENT_STATUS_INVALID);
+        }
+
+        courseEnrollment.setStatus(request.getStatus());
         return courseEnrollmentMapper.toCourseEnrollmentAdminResponse(courseEnrollment);
     }
 
@@ -154,6 +163,7 @@ public class CourseEnrollmentService {
         String courseId = registerCourseClient.getCourseId();
 
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new AppException(AuthErrorCode.UNAUTHENTICATED));
+
         Course course = courseRepository.findById(courseId).orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
 
         CourseEnrollment existing = courseEnrollmentRepository.findByAccountIdAndCourseId(accountId, courseId).orElse(null);
@@ -169,7 +179,11 @@ public class CourseEnrollmentService {
             return courseEnrollmentMapper.toCourseEnrollmentResponse(existing);
         }
 
-        CourseEnrollment newEnrollment = CourseEnrollment.builder().account(account).course(course).enrolledAt(LocalDateTime.now()).status("pending").build();
+        CourseEnrollment newEnrollment = CourseEnrollment.builder()
+                .account(account)
+                .course(course)
+                .enrolledAt(LocalDateTime.now())
+                .status("pending").build();
 
         CourseEnrollment saved = courseEnrollmentRepository.save(newEnrollment);
         return courseEnrollmentMapper.toCourseEnrollmentResponse(saved);
@@ -197,16 +211,16 @@ public class CourseEnrollmentService {
     @Transactional
     public CourseEnrollmentAdminResponse create(CourseEnrollmentAdminCreateRequest request) {
         // 1. Tìm khóa học
-        Course course = courseRepository.findById(request.getCourseId())
+        Course course = courseRepository.findByIdAndStatus(request.getCourseId(), "active")
                 .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
 
         // 2. Tìm tài khoản
-        Account account = accountRepository.findById(request.getAccountId())
+        Account account = accountRepository.findByIdAndStatus(request.getAccountId(), "active")
                 .orElseThrow(() -> new AppException(AuthErrorCode.UNAUTHENTICATED));
 
         // 3. Kiểm tra đăng ký đã tồn tại
         Optional<CourseEnrollment> existOpt = courseEnrollmentRepository
-                .findByAccountIdAndCourseId(account.getId(), course.getId());
+                .findByAccountIdAndCourseIdAndStatus(account.getId(), course.getId(), "active");
 
         if (existOpt.isPresent()) {
             CourseEnrollment existing = existOpt.get();

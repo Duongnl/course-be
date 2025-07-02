@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -75,14 +76,19 @@ public class CommentService {
      */
     @Transactional
     public CommentAdminResponse changeStatus(ChangeStatusRequest request) {
+        Account account =authenticationService.getMyAccountCurrent();
         Comment comment = commentRepository.findById(request.getCommentId())
                 .orElseThrow(() -> new AppException(CommentErrorCode.COMMENT_NOT_FOUND));
 
-        comment.setStatus(request.getStatus());
+        if(Objects.equals(account.getRole(), "ADMIN") || account.getId().equals(comment.getAccount().getId())) {
 
-        CommentAdminResponse response = commentMapper.toCommentAdminResponse(comment);
-        response.setReplyCount(getActiveReplyCount(comment));
-        return response;
+            comment.setStatus(request.getStatus());
+
+            CommentAdminResponse response = commentMapper.toCommentAdminResponse(comment);
+            response.setReplyCount(getActiveReplyCount(comment));
+            return response;
+        }
+        throw new AppException(CommentErrorCode.COMMENT_DELETE_CONDITION_NOT_MET);
     }
 
     /**

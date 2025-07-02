@@ -171,4 +171,7 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             @Param("courseName") String courseName,
             Pageable pageable
     );
+
+    Optional<CourseEnrollment> findByAccountIdAndCourseIdAndStatus(String accountId, String courseId, String status);
+    Optional<CourseEnrollment> findByIdAndStatus(Integer id, String status);
 }

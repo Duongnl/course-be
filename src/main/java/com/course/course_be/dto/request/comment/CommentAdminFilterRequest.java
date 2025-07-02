@@ -1,19 +1,22 @@
 package com.course.course_be.dto.request.comment;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Setter;
+import lombok.*;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CommentAdminFilterRequest {
-    String authorName;
-    String content;
-    String lessonName;
-    String courseName;
-    int page = 0;
+    private String authorName;
+    private String content;
+    private String lessonName;
+    private String courseName;
+
+    @Builder.Default
+    private int page = 0;
 
     @Setter(AccessLevel.NONE)
-    int perPage = 10;
+    private int perPage = 10;
 
     @Setter(AccessLevel.NONE)
     String sort = "createdAt";
@@ -28,7 +31,7 @@ public class CommentAdminFilterRequest {
     }
 
     public void setPage(int page) {
-        this.page = Math.max(0, page-1); // Không cho phép page < 0
+        this.page = Math.max(0, page - 1); // Không cho phép page < 0
     }
 
     public void setSort(String sortParam) {
