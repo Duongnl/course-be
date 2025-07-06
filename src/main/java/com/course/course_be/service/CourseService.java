@@ -150,15 +150,9 @@ public class CourseService {
         return PageCourse.map(course -> {
             CourseCardResponse response = courseMapper.toCourseCardResponse(course);
 
-            int totalLessons = course.getChapters().stream()
-                    .mapToInt(ch -> ch.getLessons() != null ? ch.getLessons().size() : 0)
-                    .sum();
+            int totalLessons = courseRepository.countActiveLessonsByCourseId(course.getId());
 
-            int totalDuration = course.getChapters().stream()
-                    .flatMap(ch -> ch.getLessons() != null ? ch.getLessons().stream() : Stream.empty())
-                    .filter(Objects::nonNull)
-                    .mapToInt(lesson -> lesson.getDuration() != null ? lesson.getDuration() : 0)
-                    .sum();
+            int totalDuration = courseRepository.sumDurationByCourseId(course.getId());
 
             response.setTotalLessons(totalLessons);
             response.setTotalDuration(totalDuration);
