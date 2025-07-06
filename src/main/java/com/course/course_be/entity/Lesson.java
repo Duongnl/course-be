@@ -87,13 +87,4 @@ public class Lesson {
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
     @JsonManagedReference
     private Set<Comment> comments;
-
-
-
-
-
-
-
-
-
 }
