@@ -120,7 +120,7 @@ public class CommentService {
     /**
      * Lấy danh sách phản hồi (reply) của một bình luận theo ID
      */
-    public Page<CommentResponse> getCommentReply(CommentFilterRequest request, String commentIdReq) {
+    public Page<CommentResponse> getCommentReplyLesson(CommentFilterRequest request, String commentIdReq) {
         Integer commentId = Integer.valueOf(
                 Optional.ofNullable(commentIdReq)
                         .orElseThrow(() -> new AppException(CommentErrorCode.COMMENT_NOT_FOUND))
@@ -144,6 +144,39 @@ public class CommentService {
             return response;
         });
     }
+
+    /**
+     * Lấy danh sách phản hồi (reply) của một bình luận theo ID
+     */
+    public Page<CommentResponse> getCommentReplyCourse(CommentFilterRequest request, String commentIdReq, LocalDateTime beforeCreatedAt) {
+        Integer commentId = Integer.valueOf(
+                Optional.ofNullable(commentIdReq)
+                        .orElseThrow(() -> new AppException(CommentErrorCode.COMMENT_NOT_FOUND))
+        );
+
+        Comment parentComment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new AppException(CommentErrorCode.COMMENT_NOT_FOUND));
+
+        Pageable pageable = PageRequest.of(
+                request.getPage(),
+                request.getPerPage(),
+                Sort.by(Sort.Direction.fromString(request.getOrder()), request.getSort())
+        );
+
+        Page<Comment> commentPage = commentRepository.findRepliesByParentCommentWithCursor(
+                parentComment.getId(),
+                beforeCreatedAt,
+                "inactive",
+                pageable
+        );
+
+        return commentPage.map(comment -> {
+            CommentResponse response = commentMapper.toCommentResponse(comment);
+            response.setReplyCount(getActiveReplyCount(comment));
+            return response;
+        });
+    }
+
 
     /**
      * Tạo mới bình luận (có thể là bình luận cha hoặc phản hồi)

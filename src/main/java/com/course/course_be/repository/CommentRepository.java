@@ -111,4 +111,19 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
             @Param("excludedStatus") String excludedStatus,
             Pageable pageable
     );
+
+    @Query("""
+    SELECT c FROM Comment c
+    WHERE c.parentComment.id = :parentCommentId
+      AND c.status <> :excludedStatus
+      AND (:beforeCreatedAt IS NULL OR c.createdAt < :beforeCreatedAt)
+    ORDER BY c.createdAt DESC, c.id DESC
+""")
+    Page<Comment> findRepliesByParentCommentWithCursor(
+            @Param("parentCommentId") Integer parentCommentId,
+            @Param("beforeCreatedAt") LocalDateTime beforeCreatedAt,
+            @Param("excludedStatus") String excludedStatus,
+            Pageable pageable
+    );
+
 }

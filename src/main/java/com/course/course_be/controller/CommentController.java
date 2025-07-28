@@ -58,7 +58,7 @@ public class CommentController {
             @RequestParam(required = true) String commentId,
             @ModelAttribute CommentFilterRequest commentFilterRequest
     ) {
-        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest, commentId);
+        Page<CommentResponse> commentPage = commentService.getCommentReplyLesson(commentFilterRequest, commentId);
         return ApiResponse.<List<CommentResponse>>builder()
                 .result(commentPage.getContent())
                 .totalItems(commentPage.getTotalElements())
@@ -87,9 +87,10 @@ public class CommentController {
     @GetMapping("/course/reply")
     public ApiResponse<List<CommentResponse>> getCommentCourseReply(
             @RequestParam(required = true) String commentId,
+            @RequestParam(required = false) LocalDateTime createdAt,
             @ModelAttribute CommentFilterRequest commentFilterRequest
     ) {
-        Page<CommentResponse> commentPage = commentService.getCommentReply(commentFilterRequest, commentId);
+        Page<CommentResponse> commentPage = commentService.getCommentReplyCourse(commentFilterRequest, commentId,createdAt);
         return ApiResponse.<List<CommentResponse>>builder()
                 .result(commentPage.getContent())
                 .totalItems(commentPage.getTotalElements())
