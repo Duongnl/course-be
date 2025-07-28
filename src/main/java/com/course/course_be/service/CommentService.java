@@ -71,18 +71,30 @@ public class CommentService {
         });
     }
 
+    public void changeInactiveStatusComment(Comment comment) {
+        comment.setStatus("inactive");
+        for (Comment commentItem : comment.getCommentReplies()) {
+                changeInactiveStatusComment(commentItem);
+        }
+
+    }
+
     /**
      * Thay đổi trạng thái của bình luận (active/inactive)
      */
     @Transactional
     public CommentAdminResponse changeStatus(ChangeStatusRequest request) {
-        Account account =authenticationService.getMyAccountCurrent();
+        Account account = authenticationService.getMyAccountCurrent();
         Comment comment = commentRepository.findById(request.getCommentId())
                 .orElseThrow(() -> new AppException(CommentErrorCode.COMMENT_NOT_FOUND));
 
-        if(Objects.equals(account.getRole(), "ADMIN") || account.getId().equals(comment.getAccount().getId())) {
+        if (Objects.equals(account.getRole(), "ADMIN") || account.getId().equals(comment.getAccount().getId())) {
 
-            comment.setStatus(request.getStatus());
+            if (request.getStatus().equals("inactive")) {
+                changeInactiveStatusComment(comment);
+            } else {
+                comment.setStatus(request.getStatus());
+            }
 
             CommentAdminResponse response = commentMapper.toCommentAdminResponse(comment);
             response.setReplyCount(getActiveReplyCount(comment));

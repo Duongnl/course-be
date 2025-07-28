@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -62,15 +63,30 @@ public class CourseService {
     }
 
     public CourseClientResponse getCourse(String id) {
-        Account account = authenticationService.getMyAccountCurrent();
+        var context = SecurityContextHolder.getContext();
+        String Id = context.getAuthentication().getName();
+        System.out.println("id auth >>> " + Id);
+
         Course course = new Course();
-        if (account.getRole().equals("ADMIN")) {
-            course = courseRepository.findByIdWithChaptersAndLessonsAdmin(id)
-                    .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+
+        if (!Id.equals("anonymousUser")) {
+            Account account = authenticationService.getMyAccountCurrent();
+            if (account.getRole().equals("ADMIN")) {
+                course = courseRepository.findByIdWithChaptersAndLessonsAdmin(id)
+                        .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+            } else {
+                course = courseRepository.findByIdWithChaptersAndLessons(id)
+                        .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
+            }
         } else {
             course = courseRepository.findByIdWithChaptersAndLessons(id)
                     .orElseThrow(() -> new AppException(CourseErrorCode.COURSE_NOT_FOUND));
         }
+
+
+
+
+
 
         course.setChapters(
                 course.getChapters().stream()
@@ -134,15 +150,9 @@ public class CourseService {
         return PageCourse.map(course -> {
             CourseCardResponse response = courseMapper.toCourseCardResponse(course);
 
-            int totalLessons = course.getChapters().stream()
-                    .mapToInt(ch -> ch.getLessons() != null ? ch.getLessons().size() : 0)
-                    .sum();
+            int totalLessons = courseRepository.countActiveLessonsByCourseId(course.getId());
 
-            int totalDuration = course.getChapters().stream()
-                    .flatMap(ch -> ch.getLessons() != null ? ch.getLessons().stream() : Stream.empty())
-                    .filter(Objects::nonNull)
-                    .mapToInt(lesson -> lesson.getDuration() != null ? lesson.getDuration() : 0)
-                    .sum();
+            int totalDuration = courseRepository.sumDurationByCourseId(course.getId());
 
             response.setTotalLessons(totalLessons);
             response.setTotalDuration(totalDuration);

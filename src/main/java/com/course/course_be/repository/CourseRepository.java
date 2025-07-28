@@ -159,4 +159,28 @@ public interface CourseRepository extends JpaRepository<Course, String> {
     Optional<Course> findByIdAndStatus(String id, String status);
 
     List<Course> findByCategory(Category category);
+
+
+
+    @Query("""
+        SELECT COUNT(l)
+        FROM Lesson l
+        JOIN l.chapter ch
+        JOIN ch.course c
+        WHERE c.id = :courseId
+          AND l.status = 'active'
+          AND ch.status = 'active'
+    """)
+    int countActiveLessonsByCourseId(@Param("courseId") String courseId);
+
+    @Query("""
+        SELECT SUM(l.duration)
+        FROM Lesson l
+        JOIN l.chapter ch
+        JOIN ch.course c
+        WHERE c.id = :courseId
+          AND l.status = 'active'
+          AND ch.status = 'active'
+    """)
+    Integer sumDurationByCourseId(@Param("courseId") String courseId);
 }
