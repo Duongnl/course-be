@@ -148,14 +148,16 @@ public class CourseService {
 
 
         return PageCourse.map(course -> {
+
             CourseCardResponse response = courseMapper.toCourseCardResponse(course);
 
             int totalLessons = courseRepository.countActiveLessonsByCourseId(course.getId());
 
-            int totalDuration = courseRepository.sumDurationByCourseId(course.getId());
+            Integer totalDuration = courseRepository.sumDurationByCourseId(course.getId());
+            int duration = (totalDuration != null) ? totalDuration.intValue() : 0;
 
             response.setTotalLessons(totalLessons);
-            response.setTotalDuration(totalDuration);
+            response.setTotalDuration(duration);
 
             return response;
         });
